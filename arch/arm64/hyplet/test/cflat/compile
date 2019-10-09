@@ -1,0 +1,2 @@
+source ../setup_env
+$CC --static  -I ../../../../include elf.c cflat.c ../utils/hyplet_utilsS.S ../utils/hyplet_utils.c -o cflat

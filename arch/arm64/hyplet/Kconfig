@@ -1,0 +1,9 @@
+#
+# Hyplet Protect 
+#
+config HYPLET
+	bool "hyplet"
+	---help---
+	Hyplets provides access to user space code by mapping user space pages
+	to EL2.
+	Hyplets are used in many forms.TEE, RealTime,  offline hyplets ,RPC and so on.

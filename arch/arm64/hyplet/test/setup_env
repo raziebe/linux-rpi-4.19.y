@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+GCC=/opt/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/
+CC=${GCC}/bin/aarch64-linux-gnu-gcc 
+READELF=/${GCC}/bin/aarch64-linux-gnu-readelf
+OBJDUMP=${GCC}/bin/aarch64-linux-gnu-objdump
+STRIP=${GCC}/bin/aarch64-linux-gnu-strip
