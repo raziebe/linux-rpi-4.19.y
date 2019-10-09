@@ -1,6 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0
 
 obj-y := irqdesc.o handle.o manage.o spurious.o resend.o chip.o dummychip.o devres.o
+
+ifdef CONFIG_HYPLET
+CFLAGS_irqdesc.o += -D__HYPLET__
+endif
+
 obj-$(CONFIG_IRQ_TIMINGS) += timings.o
 obj-$(CONFIG_GENERIC_IRQ_CHIP) += generic-chip.o
 obj-$(CONFIG_GENERIC_IRQ_PROBE) += autoprobe.o

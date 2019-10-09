@@ -108,15 +108,15 @@ static const char *__init cpu_read_enable_method(int cpu)
 int __init cpu_read_ops(int cpu)
 {
 	const char *enable_method = cpu_read_enable_method(cpu);
-
+	
 	if (!enable_method)
 		return -ENODEV;
-
+	 
+	printk("%s %d\n",__func__,__LINE__);
 	cpu_ops[cpu] = cpu_get_ops(enable_method);
 	if (!cpu_ops[cpu]) {
-		pr_warn("Unsupported enable-method: %s\n", enable_method);
+		printk("Unsupported enable-method: %s\n", enable_method);
 		return -EOPNOTSUPP;
 	}
-
 	return 0;
 }

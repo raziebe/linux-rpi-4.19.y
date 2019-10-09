@@ -562,6 +562,7 @@ static int cpuhp_up_callbacks(unsigned int cpu, struct cpuhp_cpu_state *st,
 	enum cpuhp_state prev_state = st->state;
 	int ret = 0;
 
+	printk("%s %d\n",__func__,__LINE__);
 	while (st->state < target) {
 		st->state++;
 		ret = cpuhp_invoke_callback(cpu, st->state, true, NULL, NULL);
@@ -809,11 +810,13 @@ static int take_cpu_down(void *_param)
 	int err, cpu = smp_processor_id();
 	int ret;
 
+	printk("%s %d\n",__func__,__LINE__);
 	/* Ensure this CPU doesn't handle any more interrupts. */
 	err = __cpu_disable();
 	if (err < 0)
 		return err;
 
+	printk("%s %d\n",__func__,__LINE__);
 	/*
 	 * We get here while we are in CPUHP_TEARDOWN_CPU state and we must not
 	 * do this step again.
@@ -841,6 +844,7 @@ static int takedown_cpu(unsigned int cpu)
 	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
 	int err;
 
+	printk("%s %d\n",__func__,__LINE__);
 	/* Park the smpboot threads */
 	kthread_park(per_cpu_ptr(&cpuhp_state, cpu)->thread);
 
@@ -859,8 +863,10 @@ static int takedown_cpu(unsigned int cpu)
 		irq_unlock_sparse();
 		/* Unpark the hotplug thread so we can rollback there */
 		kthread_unpark(per_cpu_ptr(&cpuhp_state, cpu)->thread);
+		printk("%s %d\n",__func__,__LINE__);
 		return err;
 	}
+	printk("%s %d\n",__func__,__LINE__);
 	BUG_ON(cpu_online(cpu));
 
 	/*
@@ -938,17 +944,21 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen,
 	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
 	int prev_state, ret = 0;
 
+	printk("%s %d\n",__func__,__LINE__);
 	if (num_online_cpus() == 1)
 		return -EBUSY;
 
+	printk("%s %d\n",__func__,__LINE__);
 	if (!cpu_present(cpu))
 		return -EINVAL;
 
+	printk("%s %d\n",__func__,__LINE__);
 	cpus_write_lock();
 
 	cpuhp_tasks_frozen = tasks_frozen;
 
 	prev_state = cpuhp_set_state(st, target);
+	printk("%s %d\n",__func__,__LINE__);
 	/*
 	 * If the current CPU state is in the range of the AP hotplug thread,
 	 * then we need to kick the thread.
@@ -972,10 +982,12 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen,
 
 		st->target = target;
 	}
+	printk("%s %d\n",__func__,__LINE__);
 	/*
 	 * The AP brought itself down to CPUHP_TEARDOWN_CPU. So we need
 	 * to do the further cleanups.
 	 */
+	printk("%s %d\n",__func__,__LINE__);
 	ret = cpuhp_down_callbacks(cpu, st, target);
 	if (ret && st->state == CPUHP_TEARDOWN_CPU && st->state < prev_state) {
 		cpuhp_reset_state(st, prev_state);

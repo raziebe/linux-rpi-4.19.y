@@ -551,7 +551,7 @@ static int virtio_mmio_probe(struct platform_device *pdev)
 	vm_dev->base = devm_ioremap(&pdev->dev, mem->start, resource_size(mem));
 	if (vm_dev->base == NULL)
 		return -EFAULT;
-
+	printk("mem->start %p at base %p\n", mem->start,  vm_dev->base);
 	/* Check magic value */
 	magic = readl(vm_dev->base + VIRTIO_MMIO_MAGIC_VALUE);
 	if (magic != ('v' | 'i' << 8 | 'r' << 16 | 't' << 24)) {

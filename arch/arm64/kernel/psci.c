@@ -56,13 +56,16 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
 #ifdef CONFIG_HOTPLUG_CPU
 static int cpu_psci_cpu_disable(unsigned int cpu)
 {
+	printk("%s %d\n",__func__,__LINE__);
 	/* Fail early if we don't have CPU_OFF support */
 	if (!psci_ops.cpu_off)
 		return -EOPNOTSUPP;
 
+	printk("%s %d\n",__func__,__LINE__);
 	/* Trusted OS will deny CPU_OFF */
 	if (psci_tos_resident_on(cpu))
 		return -EPERM;
+	printk("%s %d\n",__func__,__LINE__);
 
 	return 0;
 }
@@ -77,6 +80,7 @@ static void cpu_psci_cpu_die(unsigned int cpu)
 	u32 state = PSCI_POWER_STATE_TYPE_POWER_DOWN <<
 		    PSCI_0_2_POWER_STATE_TYPE_SHIFT;
 
+	printk("%s %d\n",__func__,__LINE__);
 	ret = psci_ops.cpu_off(state);
 
 	pr_crit("unable to power off CPU%u (%d)\n", cpu, ret);
@@ -86,8 +90,11 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
 {
 	int err, i;
 
-	if (!psci_ops.affinity_info)
+	printk("%s %d\n",__func__,__LINE__);
+	if (!psci_ops.affinity_info){
 		return 0;
+	}
+	printk("%s %d\n",__func__,__LINE__);
 	/*
 	 * cpu_kill could race with cpu_die and we can
 	 * potentially end up declaring this cpu undead
@@ -110,7 +117,7 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
 	return -ETIMEDOUT;
 }
 #endif
-
+// raz
 const struct cpu_operations cpu_psci_ops = {
 	.name		= "psci",
 #ifdef CONFIG_CPU_IDLE
