@@ -21,12 +21,28 @@ int hyplet_map_user(struct hyplet_vm *hyp,struct hyplet_ctrl *hypctl);
 DEFINE_PER_CPU(struct hyplet_vm, HYPLETS);
 
 struct hyplet_vm* hyplet_get(int cpu){
-	return &per_cpu(HYPLETS, cpu);
+	
+	struct hyplet_vm* vm;
+	unsigned long flags;
+
+	local_irq_save(flags);
+	vm =  &per_cpu(HYPLETS, cpu);
+	local_irq_restore(flags);
+	return vm;
 }
 
 struct hyplet_vm* hyplet_get_vm(void){
-	return this_cpu_ptr(&HYPLETS);
+	
+	struct hyplet_vm* vm;
+	unsigned long flags;
+
+	local_irq_save(flags);
+	vm = this_cpu_ptr(&HYPLETS);
+	local_irq_restore(flags);
+
+	return vm;
 }
+
 /*
  * construct page table
 */

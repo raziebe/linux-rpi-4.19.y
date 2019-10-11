@@ -148,17 +148,22 @@ void debug_func(void *addr)
 /* user interface  */
 static struct proc_dir_entry *procfs = NULL;
 
-static ssize_t proc_write(struct file *file, const char __user * buffer,
-			  size_t count, loff_t * dummy)
+void turn_on_acq(void)
 {
 	struct hyplet_vm *vm = hyplet_get_vm();
 
-	printk("Updating MMIO\n");
 	walk_on_mmu_el1();
 	printk("Marking all pages RO\n");
 	hyplet_call_hyp((void *)KERN_TO_HYP(walk_ipa_el2), KERN_TO_HYP(vm),
 			S2_PAGE_ACCESS_R);
+}
+EXPORT_SYMBOL_GPL(turn_on_acq);
 
+static ssize_t proc_write(struct file *file, const char __user * buffer,
+			  size_t count, loff_t * dummy)
+{
+	printk("Updating MMIO\n");
+	turn_on_acq();
 	return count;
 }
 
