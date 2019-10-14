@@ -188,8 +188,9 @@ static ssize_t proc_read(struct file *filp, char __user * page,
 
 		vm = hyplet_get(cpu);
 		len += sprintf(page + len,
-				"%d pages processed = %d\n",
-				vm->ipa_pages,vm->ipa_pages_processed);
+				"%d: pages processed = %d\n",
+				cpu,
+				vm->ipa_pages_processed);
 	}
 	len += sprintf(page + len, "Nr Io Addresses %ld\n",get_ioaddressesNR());
 	filp->private_data = 0x00;
