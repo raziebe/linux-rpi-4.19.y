@@ -1,0 +1,3 @@
+# make ARCH=arm64 CROSS_COMPILE=/opt/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- Image
+make ARCH=arm64 CROSS_COMPILE=/opt/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- INSTALL_MOD_PATH=//media/raz/rootfs/ modules_install O=../obj/
+#make ARCH=arm64 CROSS_COMPILE=/opt/gcc-linaro-4.9-2015.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- O=../obj/ Image
