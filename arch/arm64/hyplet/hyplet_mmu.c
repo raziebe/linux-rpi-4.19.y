@@ -87,6 +87,8 @@ int __hyp_text  is_device_mem(struct hyplet_vm *hyp,unsigned long phyaddr)
 	return 0;
 }
 
+
+
 void walk_on_mmu_el1(void)
 {
 	unsigned long i,j,k;

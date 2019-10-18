@@ -133,18 +133,63 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	hyplet_invld_ipa_tlb(phy_addr >> 12);
 	vm->ipa_pages_processed++;
 	// copy its content
-	if (is_device_mem(vm,phy_addr)){
+	if (is_device_mem(vm, phy_addr)){
 		return 0x99;
 	}
 
 	temp = (unsigned long *)hyp_phys_to_virt(phy_addr, vm);
+	/*
+		check if LiME passed this physical address
+		if not do nothing
+		copy page to pool and the phsyical address
+		mark page as occupied
+	*/
+	if (!LimePassedThisMemory) {
+
+		struct limePool* pool  = KERN_TO_HYP( vm->limePool);
+		int cur = limePool->cur;
+		
+		memcpy(pool->pages[cur], temp,PAGE_SIZE);
+
+
+	}
 	return (unsigned long)temp[4];
 }
 
-void debug_func(void *addr)
+
+/* Lime's stuff */
+
+
+/* Called From LiME right before turning on the acqusion */
+int allocate_lime_pool(void)
 {
-	printk("about to crash %p\n",(addr));
-}
+	int cpu;
+	int rc;
+	struct hyplet_vm *this_vm = hyplet_get_vm();
+	struct LimePagePool *limePool;
+	
+	
+	if (this_vm->limepool != NULL)
+		return 0;
+
+	limePool  = vmalloc(sizeof(struct LimePagePool));
+	if (limePool == NULL)
+		return -1; 
+
+	memset(limePool, 0x00, sizeof(struct LimePagePool));
+	
+	for_each_possible_cpu(cpu){
+		struct hyplet_vm *vm;
+
+		vm = hyplet_get(cpu);
+		vm->limepool = limePool;
+	}
+	rc  = create_hyp_mapping( vm->limepool , );
+	return 0;
+}	
+EXPORT_SYMBOL_GPL(allocate_lime_pool);
+
+
 /* user interface  */
 static struct proc_dir_entry *procfs = NULL;
 
@@ -162,7 +207,7 @@ EXPORT_SYMBOL_GPL(turn_on_acq);
 static ssize_t proc_write(struct file *file, const char __user * buffer,
 			  size_t count, loff_t * dummy)
 {
-	printk("Updating MMIO\n");
+	printk("Updating MMU\n");
 	turn_on_acq();
 	return count;
 }
@@ -203,43 +248,12 @@ static struct file_operations acqusition_proc_ops = {
 	.read = proc_read,
 	.write = proc_write,
 };
-/*
 
-static ssize_t acqusition_ops_write(struct file *filp,
-	const char __user *umem, size_t size, loff_t *off)
-{
-	int n = 0;
-	struct hyplet_vm *vm =  hyplet_get_vm();
 
-	return size-n;
-}
-
-static ssize_t acqusition_ops_read(struct file *filp, char __user *umem,
-				size_t size, loff_t *off)
-{
-	int n = 0;
-	struct hyplet_vm *vm =  hyplet_get_vm();
-	return size-n;
-}
-
-static struct file_operations acqusition_ops = {
-	write: acqusition_ops_write,
-	read:  acqusition_ops_read,
-};
-
-int acqusition_ops_major = 0;
-
-*/
 void acqusion_init_procfs(void)
 {
 	procfs = proc_create_data("hyplet_stats", 
 			O_RDWR, NULL, &acqusition_proc_ops, NULL);
-	/*
-	acqusition_ops_major = register_chrdev(0, "acqusition", &acqusition_ops);
-	if (acqusition_ops_major < 0){
-		printk(MODULE_NAME "Failed to create acqusition procfs");
-	}
-	*/
 }
 
 

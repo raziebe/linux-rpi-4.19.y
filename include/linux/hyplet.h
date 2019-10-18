@@ -127,9 +127,20 @@ struct virt_dev_access {
 	struct stage2_fault_addr faddr;
 };
 
+
 struct IoMemAddr {
-	unsigned long iomemaddr[1000];
+	unsigned long iomemaddr[100];
 	unsigned long  ioaddressesNR;
+};
+
+#define LiME_POOL_PAGE_OCCUPIED	0x1
+#define LiME_POOL_PAGE_FREE	0x0
+#define POOL_SIZE	1000
+
+struct LimePagePool {
+	unsigned char pages[1000 * PAGE_SIZE];
+	int cur;
+	unsigned char state[1000];
 };
 
 struct hyplet_vm {
@@ -164,6 +175,7 @@ struct hyplet_vm {
 	int ipa_pages;
 	int ipa_pages_processed;
 	struct IoMemAddr* iomemaddr;
+	struct LimePagePool *limePool;
 } __attribute__ ((aligned (8)));
 
 struct hyp_wait{
