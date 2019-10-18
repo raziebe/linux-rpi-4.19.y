@@ -3,6 +3,7 @@
 #include <linux/hyplet.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
+#include <linux/vmalloc.h>
 #include <linux/fs.h>		/* for file_operations */
 #include <linux/slab.h>	/* versioning */
 #include <linux/cdev.h>
@@ -148,10 +149,10 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	//struct limePool* pool  = KERN_TO_HYP( vm->limePool);
 	if (1 /*LiME didnt pass this memmory*/) {
 
-		struct LimePagePool* limePool  = KERN_TO_HYP(vm->limePool);
+		struct LimePagePool* limePool  = (stuct LimePagePool*)KERN_TO_HYP(vm->limePool);
 		int cur = (limePool->cur +1)%1000;
 		
-		memcpy(limePool->pages[cur], temp,PAGE_SIZE);
+		memcpy((void*)limePool->pages[cur], temp,PAGE_SIZE);
 
 
 	}
@@ -174,7 +175,7 @@ int allocate_lime_pool(void)
 	if (this_vm->limepool != NULL)
 		return 0;
 
-	limePool  = vmalloc(sizeof(struct LimePagePool));
+	limePool  = (struct LimePagePool*)vmalloc(sizeof(struct LimePagePool));
 	if (limePool == NULL)
 		return -1; 
 
@@ -184,9 +185,10 @@ int allocate_lime_pool(void)
 		struct hyplet_vm *vm;
 
 		vm = hyplet_get(cpu);
-		vm->limepool = limePool;
+		vm->limePool = limePool;
 	}
-	rc  = create_hyp_mapping( vm->limepool , );
+	rc  = create_hyp_mappings(this_vm->limePool ,(char*)this_vm->limePool+sizeof(struct limePool), PAGE_HYP);
+	if (rc){printk("Cannot map hyp stack\n");}
 	return 0;
 }	
 EXPORT_SYMBOL_GPL(allocate_lime_pool);
