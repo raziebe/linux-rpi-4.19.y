@@ -144,12 +144,14 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		copy page to pool and the phsyical address
 		mark page as occupied
 	*/
-	if (!LimePassedThisMemory) {
 
-		struct limePool* pool  = KERN_TO_HYP( vm->limePool);
-		int cur = limePool->cur;
+	//struct limePool* pool  = KERN_TO_HYP( vm->limePool);
+	if (1 /*LiME didnt pass this memmory*/) {
+
+		struct LimePagePool* limePool  = KERN_TO_HYP(vm->limePool);
+		int cur = (limePool->cur +1)%1000;
 		
-		memcpy(pool->pages[cur], temp,PAGE_SIZE);
+		memcpy(limePool->pages[cur], temp,PAGE_SIZE);
 
 
 	}
