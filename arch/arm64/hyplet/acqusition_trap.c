@@ -152,7 +152,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		struct LimePagePool* limePool  = (struct LimePagePool*)KERN_TO_HYP(vm->limePool);
 		int cur = (limePool->cur +1)%1000;
 		
-		memcpy((void*)limePool->pages[cur], temp,PAGE_SIZE);
+		memcpy(limePool->pages[cur], temp,PAGE_SIZE);
 
 
 	}
