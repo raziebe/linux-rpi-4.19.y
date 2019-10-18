@@ -192,6 +192,7 @@ void hyplet_init_ipa(void)
 	acqusion_init_procfs();
 	make_vtcr_el2(vm);
 	vm->hyp_memstart_addr = memstart_addr;
+	printk("hyplet: memstarts at %llx\n",memstart_addr);
 }
 
 
@@ -250,7 +251,7 @@ int map_ipa_to_el2(struct hyplet_vm *vm)
 	unsigned long *desc0 = vm->ipa_desc_zero;
 	unsigned long temp;
 
-	if ( create_hyp_mappings(desc0,
+	if ( create_hyp_mappings((void*)desc0,
 			(void *)((unsigned long)desc0 + PAGE_SIZE- 1), PAGE_HYP) ){
 
 		printk("Failed to map desc0\n");

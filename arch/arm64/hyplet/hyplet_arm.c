@@ -229,7 +229,9 @@ static int hyplet_arch_init(void)
 		}
 	}
 
-	printk("HYP mode is available rc-26\n");
+	printk("HYP mode is available rc-27 phys_offset=%lx\n",
+				PHYS_OFFSET);
+
 	err = init_hyp_mode();
 	if (err)
 		return -1;
