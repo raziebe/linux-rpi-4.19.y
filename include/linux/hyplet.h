@@ -138,9 +138,9 @@ struct IoMemAddr {
 #define POOL_SIZE	1000
 
 struct LimePagePool {
-	unsigned char pages[1000 * PAGE_SIZE];
+	long* hyp_vaddr[POOL_SIZE];
 	int cur;
-	unsigned char state[1000];
+	unsigned char state[POOL_SIZE];
 };
 
 struct hyplet_vm {
@@ -171,11 +171,11 @@ struct hyplet_vm {
 	unsigned long vttbr_el2;
 	unsigned long hcr_el2;
 	unsigned long mair_el2;
-	s64 hyp_memstart_addr;	/* memstart_addr is use deduct the physical address */
+	long cur_phy_addr;
 	int ipa_pages;
 	int ipa_pages_processed;
 	struct IoMemAddr* iomemaddr;
-	struct LimePagePool *limePool;
+	struct LimePagePool* limePool;
 } __attribute__ ((aligned (8)));
 
 struct hyp_wait{

@@ -79,7 +79,7 @@ unsigned long get_el1_starting_address(void)
 int __hyp_text  is_device_mem(struct hyplet_vm *hyp,unsigned long phyaddr)
 {
 	int i = 0;
-	struct IoMemAddr* iomemaddr = KERN_TO_HYP(hyp->iomemaddr);
+	struct IoMemAddr* iomemaddr = ( struct IoMemAddr* )KERN_TO_HYP(hyp->iomemaddr);
 
 	for (; i <  iomemaddr->ioaddressesNR; i++)
 		if (iomemaddr->iomemaddr[i] == (phyaddr & ~0xFFF) )
@@ -158,6 +158,36 @@ unsigned long kvm_uaddr_to_pfn(unsigned long uaddr)
 	return pfn;
 }
 
+int hyp_map_physical(void *from, void *to, pgprot_t prot)
+{
+	unsigned long virt_addr;
+	unsigned long fr = (unsigned long)from;
+	unsigned long start = USER_TO_HYP((unsigned long)from);
+	unsigned long end = USER_TO_HYP((unsigned long)to);
+	int mapped = 0;
+	
+	virt_addr = start = start & PAGE_MASK;
+	end = PAGE_ALIGN(end);
+
+//	for (virt_addr = start; virt_addr < end; virt_addr += PAGE_SIZE,fr += PAGE_SIZE) {
+		int err;
+		unsigned long pfn;
+		
+		pfn = (virt_addr >> PAGE_SHIFT);
+
+		err = __create_hyp_mappings(hyp_pgd, virt_addr,
+					    virt_addr + PAGE_SIZE,
+					    pfn,
+	   				    prot);
+		if (err) {
+			printk("hyplet: Failed to map %p\n",(void *)virt_addr);
+			return mapped;
+		}
+		mapped++;
+//	}
+	return mapped;
+}
+
 /**
  * create_hyp_user_mappings - duplicate a user virtual address range in Hyp mode
  * @from:	The virtual kernel start address of the range
@@ -167,7 +197,7 @@ unsigned long kvm_uaddr_to_pfn(unsigned long uaddr)
  * in Hyp-mode mapping (modulo HYP_PAGE_OFFSET) to the same underlying
  * physical pages.
  */
-int create_hyp_user_mappings(void *from, void *to,pgprot_t prot)
+int create_hyp_user_mappings(void *from, void *to, pgprot_t prot)
 {
 	unsigned long virt_addr;
 	unsigned long fr = (unsigned long)from;
@@ -181,15 +211,21 @@ int create_hyp_user_mappings(void *from, void *to,pgprot_t prot)
 	for (virt_addr = start; virt_addr < end; virt_addr += PAGE_SIZE,fr += PAGE_SIZE) {
 		int err;
 		unsigned long pfn;
-
-		pfn = kvm_uaddr_to_pfn(fr);
+		
+		if (!prot.pgprot) {
+			pfn = (virt_addr >> PAGE_SHIFT);
+			prot = PAGE_HYP;
+			printk("Mapping physical page %ld %lx\n",pfn, virt_addr);
+		   } else{ 
+			pfn = kvm_uaddr_to_pfn(fr);
+		}
 		if (pfn <= 0)
 			continue;
 
 		err = __create_hyp_mappings(hyp_pgd, virt_addr,
 					    virt_addr + PAGE_SIZE,
 					    pfn,
-						prot);
+					prot);
 		if (err) {
 			printk("TP: Failed to map %p\n",(void *)virt_addr);
 			return mapped;

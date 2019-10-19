@@ -819,6 +819,8 @@ __SYSCALL(__NR_pkey_free, sys_pkey_free)
 __SYSCALL(__NR_statx, sys_statx)
 #define __NR_rseq 398
 __SYSCALL(__NR_rseq, sys_rseq)
+#define __NR_hyplet 399
+__SYSCALL(__NR_hyplet, sys_hyplet)
 
 /*
  * Please add new compat syscalls above this comment and update

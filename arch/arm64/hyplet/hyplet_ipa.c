@@ -7,7 +7,7 @@
 #include "hypletS.h"
 
 
-extern s64 memstart_addr;
+//extern s64 memstart_addr;
 phys_addr_t kaddr_to_phys(void *kaddr);
 
 void map_stage3_to_hypervisor(unsigned long *addr)
@@ -191,7 +191,7 @@ void hyplet_init_ipa(void)
 
 	acqusion_init_procfs();
 	make_vtcr_el2(vm);
-	vm->hyp_memstart_addr = memstart_addr;
+//	vm->hyp_memstart_addr = memstart_addr;
 }
 
 

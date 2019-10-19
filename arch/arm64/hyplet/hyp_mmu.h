@@ -140,6 +140,7 @@ unsigned long get_el1_starting_address(void);
 void walk_on_mmu_el1(void);
 unsigned long __hyp_text get_ioaddressesNR(void);
 int __hyp_text is_device_mem(struct hyplet_vm *hyp,unsigned long phyaddr);
+int hyp_map_physical(void *from, void *to, pgprot_t prot);
 
 #define USER_TO_HYP(uva)	(uva)
 #endif

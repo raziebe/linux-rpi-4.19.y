@@ -229,7 +229,9 @@ static int hyplet_arch_init(void)
 		}
 	}
 
-	printk("HYP mode is available rc-26\n");
+	printk("HYP mode is available rc-27 phys_offset=%lx\n",
+				PHYS_OFFSET);
+
 	err = init_hyp_mode();
 	if (err)
 		return -1;
@@ -291,7 +293,7 @@ static int hyplet_arch_init(void)
 		hyp->ipa_desc_zero =  this_hyp->ipa_desc_zero;
 		hyp->vttbr_el2_kern = this_hyp->vttbr_el2_kern;
 		hyp->vttbr_el2 	   = this_hyp->vttbr_el2;
-		hyp->hyp_memstart_addr = this_hyp->hyp_memstart_addr;
+	//	hyp->hyp_memstart_addr = this_hyp->hyp_memstart_addr;
 	}
 
 	return 0;
