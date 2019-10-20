@@ -13,8 +13,7 @@
 
 unsigned long __hyp_text __hyp_phys_to_virt(unsigned long addr,struct hyplet_vm *vm)
 {
-	return ( (unsigned long)((addr) - 0) | PAGE_OFFSET );
-	//return ( (unsigned long)((addr) - vm->hyp_memstart_addr) | PAGE_OFFSET );
+	return ( (unsigned long)((addr) - PHYS_OFFSET ) | PAGE_OFFSET );
 }
 
 unsigned long __hyp_text hyp_phys_to_virt(unsigned long addr,struct hyplet_vm *vm)
@@ -117,9 +116,9 @@ void __hyp_text   walk_ipa_el2(struct hyplet_vm *vm,int s2_page_access)
 
 #define LIME_RAMSTR "System RAM"
 
-int __hyp_text is_black_listed(unsigned long pfn)
+int __hyp_text is_black_listed(signed long pfn)
 {
-	return (pfn <= 34940 && pfn >= 34935);
+	return ((pfn <= 34940 && pfn >= 34935) ||( pfn > 242688) | (pfn < 0));
 }
 
 static void map_range_to_el2(struct resource * res) 
@@ -128,6 +127,7 @@ static void map_range_to_el2(struct resource * res)
 
     resource_size_t i, is = PAGE_SIZE;
     long pfn;
+    int mapped = 0;
     struct page * p;
 
     printk("Mapping Ram Range [0x%llx,0x%llx] size %d\n", 
@@ -137,7 +137,8 @@ static void map_range_to_el2(struct resource * res)
 	pfn = (i >> PAGE_SHIFT);
 	
 	if (is_black_listed(pfn)) {
-		printk("Skipping pfn %ld address %lx\n",pfn,(unsigned long *)i);
+		printk("Skipping pfn %ld address %p\n",
+			pfn,(unsigned long *)i);
 		continue;
 	}
 
@@ -155,9 +156,10 @@ static void map_range_to_el2(struct resource * res)
 	    if (rc < 0 ){
 		printk("Failed to hyp map page = %lld\n",i);
 	    }
-	   
+	   mapped++;
         }
     }
+    printk("hyplet: mapping %d pages\n",mapped);
 }
 
 void map_system_ram_to_hypervisor(void)
@@ -188,9 +190,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 {
 	unsigned long* desc;
 	long pfn;
-	int cur;
 	struct LimePagePool* lp = NULL;
-	unsigned long real_phy_addr = phy_addr;
 
 	// first clean the attributes bits: address is in bits 47..12
 	phy_addr &= 0xFFFFFFFFF000;
@@ -219,7 +219,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 			hyp_memcpy((char *)KERN_TO_HYP(lp->hyp_vaddr[lp->cur]), p, PAGE_SIZE);
 			return p[4];
 		}
-		return cur;	
+		return lp->cur;	
 
 //	}
 	return 0;
@@ -313,7 +313,7 @@ static ssize_t proc_read(struct file *filp, char __user * page,
 
 		vm = hyplet_get(cpu);
 		len += sprintf(page + len,
-				"%d: pages processed = %ld phyaddr=%lx\n",
+				"%d: pages processed = %d phyaddr=%lx\n",
 				cpu,
 				vm->ipa_pages_processed,
  				vm->cur_phy_addr);
