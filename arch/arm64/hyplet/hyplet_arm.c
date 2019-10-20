@@ -127,12 +127,6 @@ static int init_hyp_mode(void)
             return -1;
 	}
 
-	err = create_hyp_mappings(__bss_start, __bss_stop, PAGE_HYP);
-	if (err) {
-		printk("Cannot map bss section\n");
-		goto out_err;
-	}
-
 	/*
 	 * Map the Hyp stack pages
 	 */
@@ -229,7 +223,7 @@ static int hyplet_arch_init(void)
 		}
 	}
 
-	printk("HYP mode is available rc-27 phys_offset=%lx\n",
+	printk("HYP mode is available rc-27 phys_offset=%llx\n",
 				PHYS_OFFSET);
 
 	err = init_hyp_mode();
