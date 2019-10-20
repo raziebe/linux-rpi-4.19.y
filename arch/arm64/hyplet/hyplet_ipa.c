@@ -250,6 +250,7 @@ int map_ipa_to_el2(struct hyplet_vm *vm)
 	int i,j,k, n;
 	unsigned long *desc0 = vm->ipa_desc_zero;
 	unsigned long temp;
+	int err;
 
 	if ( create_hyp_mappings((void*)desc0,
 			(void *)((unsigned long)desc0 + PAGE_SIZE- 1), PAGE_HYP) ){
@@ -281,10 +282,12 @@ int map_ipa_to_el2(struct hyplet_vm *vm)
 
 					desc2_page = phys_to_page(temp);
 					desc2 = kmap(desc2_page);
-					create_hyp_mappings(desc2,
+					err = create_hyp_mappings(desc2,
 							(void *)((unsigned long)desc2 + PAGE_SIZE- 1), PAGE_HYP);
 
-
+					if (err){
+						printk("hyplet: Failed to map desc2\n");
+					}
 					for (k = 0 ; k < PAGE_SIZE/sizeof(long); k++){
 						if (desc2[k]){
 							struct page *desc3_page;
@@ -294,9 +297,11 @@ int map_ipa_to_el2(struct hyplet_vm *vm)
 
 							desc3_page = phys_to_page(temp);
 							desc3 = kmap(desc3_page);
-							create_hyp_mappings(desc3,
+							err = create_hyp_mappings(desc3,
 									(void *)((unsigned long)desc3 + PAGE_SIZE- 1), PAGE_HYP);
-
+							if (err){
+								printk("hyplet: Failed to map desc3\n");
+							}
 							for (n = 0 ; n < PAGE_SIZE/sizeof(long); n++){
 								if (desc3[n]){
 									temp = desc3[n] & 0x000FFFFFFFFFFC00LL;
