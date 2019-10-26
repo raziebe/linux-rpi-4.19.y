@@ -42,6 +42,7 @@ struct hyplet_vm* hyplet_get_vm(void){
 
 	return vm;
 }
+EXPORT_SYMBOL_GPL(hyplet_get_vm);
 
 /*
  * construct page table
@@ -391,4 +392,43 @@ int hyplet_ctl(unsigned long arg)
 				break;
 	}
 	return rc;
+}
+
+
+/* Lime pool functions */
+// TODO: make sure this is atomic / synchronized well
+
+//TODO initizlie pool.size
+void pool_heapify(struct LimePagePool* heap)
+{
+
+}
+
+void pool_insert(struct LimePagePool* heap, long* key)
+{
+
+}
+
+long* pool_pop_min(struct LimePagePool* heap)
+{
+	if(heap->size < 1)
+	{
+		printk("pool_pop_min heap->size < 1");
+		return NULL;
+	}
+	long* min = heap->hyp_vaddr[0];
+	heap->hyp_vaddr[0] = heap->hyp_vaddr[pool_get_size(heap) - 1];
+	heap->size--;
+	pool_heapify(heap);
+	return min;
+}
+
+long* pool_peek_min(struct LimePagePool* heap)
+{
+
+}
+
+int pool_get_size(struct LimePagePool* heap)
+{
+	return heap->size;
 }

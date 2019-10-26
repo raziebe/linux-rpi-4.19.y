@@ -138,10 +138,18 @@ struct IoMemAddr {
 #define POOL_SIZE	1000
 
 struct LimePagePool {
-	long* hyp_vaddr[POOL_SIZE];
+	long* hyp_vaddr[POOL_SIZE];		// arr of pointers to pages
+	unsigned char state[POOL_SIZE]; // the state of each page in the pool
+	int size;
 	int cur;
-	unsigned char state[POOL_SIZE];
 };
+
+/* Heap / priority_queue functions for the lime pool */
+void  pool_heapify(struct LimePagePool* heap);
+void  pool_insert(struct LimePagePool* heap, long* key);
+long* pool_pop_min(struct LimePagePool* heap);
+long* pool_peek_min(struct LimePagePool* heap);
+
 
 struct hyplet_vm {
 	unsigned int irq_to_trap __attribute__ ((packed));
