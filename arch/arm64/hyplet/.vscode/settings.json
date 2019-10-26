@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "acqusition_trap.h": "c",
+        "hyp_mmu.h": "c",
+        "hyplets.h": "c",
+        "module.h": "c",
+        "proc_fs.h": "c",
+        "fs.h": "c",
+        "hyplet.h": "c"
+    }
+}

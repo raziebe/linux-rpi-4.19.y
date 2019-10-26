@@ -399,14 +399,37 @@ int hyplet_ctl(unsigned long arg)
 // TODO: make sure this is atomic / synchronized well
 
 //TODO initizlie pool.size
-void pool_heapify(struct LimePagePool* heap)
-{
+void pool_heapify(struct LimePagePool* heap, int index)
+{	
+	long* temp;
+	int min;
+	int left = (2*index)+1;
+	int right = (2*index)+2;
+	if(((index*2)+1)<POOL_SIZE && heap->hyp_vaddr[left] < heap->hyp_vaddr[index]){
+		min = left;
+	} else {
+		min = index;
+	}
 
+
+	if (((index*2)+2)<POOL_SIZE && heap->hyp_vaddr[right] < heap->hyp_vaddr[min]){
+		min = right;
+	}
+
+
+	if(min != index){
+		temp = heap->hyp_vaddr[index];
+		heap->hyp_vaddr[index] = heap->hyp_vaddr[min];
+		heap->hyp_vaddr[min] = temp;
+		pool_heapify(heap,min);
+	}
 }
 
 void pool_insert(struct LimePagePool* heap, long* key)
 {
-
+	heap->size += 1;
+	heap->hyp_vaddr[heap->size - 1] = key;
+	pool_heapify(heap,heap->size - 1);
 }
 
 long* pool_pop_min(struct LimePagePool* heap)
@@ -425,7 +448,7 @@ long* pool_pop_min(struct LimePagePool* heap)
 
 long* pool_peek_min(struct LimePagePool* heap)
 {
-
+	return heap->hyp_vaddr[0];
 }
 
 int pool_get_size(struct LimePagePool* heap)
