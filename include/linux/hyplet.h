@@ -145,7 +145,7 @@ struct LimePageContext{
 }
 
 struct LimePagePool {
-	struct LimePageContext[POOL_SIZE];
+	struct LimePageContext LPC[POOL_SIZE];
 	int size; // Current size of the pool
 
 	// TODO: find purpose if one exists for this variable

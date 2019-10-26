@@ -405,22 +405,22 @@ void pool_heapify(struct LimePagePool* heap, int index)
 	int min;
 	int left = (2*index)+1;
 	int right = (2*index)+2;
-	if(((index*2)+1)<POOL_SIZE && heap->hyp_vaddr[left] < heap->hyp_vaddr[index]){
+	if(((index*2)+1)<POOL_SIZE && heap->LPC[left].hyp_vaddr < heap->LPC[index].hyp_vaddr){
 		min = left;
 	} else {
 		min = index;
 	}
 
 
-	if (((index*2)+2)<POOL_SIZE && heap->hyp_vaddr[right] < heap->hyp_vaddr[min]){
+	if (((index*2)+2)<POOL_SIZE && heap->LPC[right].hyp_vaddr < heap->LPC[min].hyp_vaddr){
 		min = right;
 	}
 
 
 	if(min != index){
-		temp = heap->hyp_vaddr[index];
-		heap->hyp_vaddr[index] = heap->hyp_vaddr[min];
-		heap->hyp_vaddr[min] = temp;
+		temp = heap->LPC[index].hyp_vaddr;
+		heap->LPC[index].hyp_vaddr = heap->LPC[min].hyp_vaddr;
+		heap->LPC[min].hyp_vaddr = temp;
 		pool_heapify(heap,min);
 	}
 }
@@ -428,7 +428,7 @@ void pool_heapify(struct LimePagePool* heap, int index)
 void pool_insert(struct LimePagePool* heap, long* key)
 {
 	heap->size += 1;
-	heap->hyp_vaddr[heap->size - 1] = key;
+	heap->LPC[heap->size - 1].hyp_vaddr = key;
 	pool_heapify(heap,heap->size - 1);
 }
 
@@ -439,8 +439,8 @@ long* pool_pop_min(struct LimePagePool* heap)
 		printk("pool_pop_min heap->size < 1");
 		return NULL;
 	}
-	long* min = heap->hyp_vaddr[0];
-	heap->hyp_vaddr[0] = heap->hyp_vaddr[pool_get_size(heap) - 1];
+	long* min = heap->LPC[0].hyp_vaddr;
+	heap->LPC[0].hyp_vaddr = heap->LPC[pool_get_size(heap) - 1].hyp_vaddr;
 	heap->size--;
 	pool_heapify(heap);
 	return min;
@@ -448,7 +448,7 @@ long* pool_pop_min(struct LimePagePool* heap)
 
 long* pool_peek_min(struct LimePagePool* heap)
 {
-	return heap->hyp_vaddr[0];
+	return heap->LPC[0].hyp_vaddr;
 }
 
 int pool_get_size(struct LimePagePool* heap)
