@@ -137,10 +137,18 @@ struct IoMemAddr {
 #define LiME_POOL_PAGE_FREE	0x0
 #define POOL_SIZE	1000
 
+struct LimePageContext{
+	long* hyp_vaddr; 		// Memory content of the page
+	unsigned long phy_addr; // Original physical address of this page (from iomem) -> lime pool heap should be compared by this
+	unsigned char state; 	// State of page in the pool
+	// TODO: add synchronize method for accessing this struct from different cpu's | e.g make state atomic or add semaphores, etc..
+}
+
 struct LimePagePool {
-	long* hyp_vaddr[POOL_SIZE];		// arr of pointers to pages
-	unsigned char state[POOL_SIZE]; // the state of each page in the pool
-	int size;
+	struct LimePageContext[POOL_SIZE];
+	int size; // Current size of the pool
+
+	// TODO: find purpose if one exists for this variable
 	int cur;
 };
 
