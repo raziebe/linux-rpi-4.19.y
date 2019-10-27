@@ -153,11 +153,16 @@ struct LimePagePool {
 };
 
 /* Heap / priority_queue functions for the lime pool */
-void pool_heapify(struct LimePagePool* heap);
-void pool_insert(struct LimePagePool* heap, struct LimePageContext); /* LimePageContext will be copied by value */
+void pool_heapify(struct LimePagePool* heap, int index);
 
-struct 	LimePageContext* pool_pop_min(struct LimePagePool* heap);
-struct 	LimePageContext* pool_peek_min(struct LimePagePool* heap);
+/* Returns the slot in [size + 1] for the caller to fill. after that, please call insert_one() to apply changes */
+struct LimePageContext* pool_find_empty_slot(struct LimePagePool* heap);
+
+ /* Call find_empty_slot to add an item and then immediately call this function */
+void pool_insert_one(struct LimePagePool* heap);
+
+void pool_pop_min(struct LimePagePool* heap);
+struct LimePageContext* pool_peek_min(struct LimePagePool* heap);
 
 struct hyplet_vm {
 	unsigned int irq_to_trap __attribute__ ((packed));

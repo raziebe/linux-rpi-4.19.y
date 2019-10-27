@@ -412,7 +412,8 @@ void pool_heapify(struct LimePagePool* heap, int index)
 
 	if(min != index)
 	{
-		struct LimePageContext*	temp = heap->pool[index];
+		// TODO: fix bugs or optimize this code for faster swapping (array of pointer to structs instead of array of structs)
+		struct LimePageContext	temp = heap->pool[index];
 		heap->pool[index] = heap->pool[min];
 		heap->pool[min] = temp;
 		pool_heapify(heap, min);
@@ -420,33 +421,39 @@ void pool_heapify(struct LimePagePool* heap, int index)
 }
 EXPORT_SYMBOL_GPL(pool_heapify);
 
-void pool_insert(struct LimePagePool* heap, struct LimePageContext key)
+struct LimePageContext* pool_find_empty_slot(struct LimePagePool* heap)
+{
+	return &(heap->pool[heap->size]);
+}
+EXPORT_SYMBOL_GPL(pool_find_empty_slot);
+
+void pool_insert_one(struct LimePagePool* heap)
 {
 	heap->size += 1;
-	heap->pool[heap->size - 1] = key;
+	//heap->pool[heap->size - 1].phy_addr = key;
 	pool_heapify(heap, heap->size - 1);
 }
-EXPORT_SYMBOL_GPL(pool_insert);
+EXPORT_SYMBOL_GPL(pool_insert_one);
 
-struct LimePageContext* pool_pop_min(struct LimePagePool* heap)
+void pool_pop_min(struct LimePagePool* heap)
 {
 	if(heap->size < 1)
 	{
 		printk("pool_pop_min heap->size < 1");
-		return NULL;
+		return; // This should not happen..., TODO; return success value?
 	}
-	struct LimePageContext* min = heap->pool[0];
+	struct LimePageContext min = heap->pool[0];
 
 	heap->pool[0] = heap->pool[heap->size - 1];
+	heap->pool[heap->size - 1] = min;
 	heap->size--;
-	pool_heapify(heap, 0);
 
-	return min;
+	pool_heapify(heap, 0);
 }
 EXPORT_SYMBOL_GPL(pool_pop_min);
 
 struct LimePageContext* pool_peek_min(struct LimePagePool* heap)
 {
-	return heap->pool[0];
+	return &(heap->pool[0]);
 }
 EXPORT_SYMBOL_GPL(pool_peek_min);

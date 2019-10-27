@@ -206,17 +206,23 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		return -1;
 
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
-//	if (1 /*LiME didnt pass this memmory*/) {
 	pfn = (phy_addr >> PAGE_SHIFT);
-		if (!is_black_listed(pfn)){
-			unsigned char *p = (unsigned char *)phy_addr;
 
-			lp->cur = (lp->cur +1) % POOL_SIZE;
-			vm->cur_phy_addr = phy_addr;
-			hyp_memcpy((char *)KERN_TO_HYP(lp->hyp_vaddr[lp->cur]), p, PAGE_SIZE);
-		}
+	if (!is_black_listed(pfn)){
+		unsigned char *p = (unsigned char *)phy_addr;
 
-//	}
+		//lp->cur = (lp->cur +1) % POOL_SIZE;
+		vm->cur_phy_addr = phy_addr;
+
+		/* Insert a page to the pool */
+		struct LimePageContext* slot =  pool_find_empty_slot(lp);
+		slot->phy_addr = phy_addr;
+		
+		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
+
+		pool_insert_one(lp);
+	}
+
 	return 0;
 }
 
@@ -245,6 +251,7 @@ int setup_lime_pool(void)
 		return -1;
 	}
 
+	/* Allocate space for each page in the pool */
 	for (i = 0 ; i < POOL_SIZE; i++) {
 		void *v;
 
@@ -254,7 +261,9 @@ int setup_lime_pool(void)
 		if (rc){
 			printk("Cannot map hyp %d \n",i);
 		}
-		limepool->hyp_vaddr[i] = (long *)v;
+
+		/* Put pointer to allocated page in the pool */
+		limepool->pool[i].hyp_vaddr = (long *)v;
 	}
 	return 0;
 }	
