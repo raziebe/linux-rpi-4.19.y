@@ -397,61 +397,56 @@ int hyplet_ctl(unsigned long arg)
 
 /* Lime pool functions */
 // TODO: make sure this is atomic / synchronized well
-
-//TODO initizlie pool.size
 void pool_heapify(struct LimePagePool* heap, int index)
 {	
-	long* temp;
-	int min;
-	int left = (2*index)+1;
-	int right = (2*index)+2;
-	if(((index*2)+1)<POOL_SIZE && heap->LPC[left].hyp_vaddr < heap->LPC[index].hyp_vaddr){
+	int min = index;
+	int cur_size = heap->size;
+	int left  = (2 * index) + 1;
+	int right = (2 * index) + 2;
+
+	if( left < cur_size && heap->pool[left].phy_addr < heap->pool[index].phy_addr)
 		min = left;
-	} else {
-		min = index;
-	}
 
-
-	if (((index*2)+2)<POOL_SIZE && heap->LPC[right].hyp_vaddr < heap->LPC[min].hyp_vaddr){
+	if (right < cur_size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
 		min = right;
-	}
 
-
-	if(min != index){
-		temp = heap->LPC[index].hyp_vaddr;
-		heap->LPC[index].hyp_vaddr = heap->LPC[min].hyp_vaddr;
-		heap->LPC[min].hyp_vaddr = temp;
-		pool_heapify(heap,min);
+	if(min != index)
+	{
+		struct LimePageContext*	temp = heap->pool[index];
+		heap->pool[index] = heap->pool[min];
+		heap->pool[min] = temp;
+		pool_heapify(heap, min);
 	}
 }
+EXPORT_SYMBOL_GPL(pool_heapify);
 
-void pool_insert(struct LimePagePool* heap, long* key)
+void pool_insert(struct LimePagePool* heap, struct LimePageContext key)
 {
 	heap->size += 1;
-	heap->LPC[heap->size - 1].hyp_vaddr = key;
-	pool_heapify(heap,heap->size - 1);
+	heap->pool[heap->size - 1] = key;
+	pool_heapify(heap, heap->size - 1);
 }
+EXPORT_SYMBOL_GPL(pool_insert);
 
-long* pool_pop_min(struct LimePagePool* heap)
+struct LimePageContext* pool_pop_min(struct LimePagePool* heap)
 {
 	if(heap->size < 1)
 	{
 		printk("pool_pop_min heap->size < 1");
 		return NULL;
 	}
-	long* min = heap->LPC[0].hyp_vaddr;
-	heap->LPC[0].hyp_vaddr = heap->LPC[pool_get_size(heap) - 1].hyp_vaddr;
+	struct LimePageContext* min = heap->pool[0];
+
+	heap->pool[0] = heap->pool[heap->size - 1];
 	heap->size--;
-	pool_heapify(heap);
+	pool_heapify(heap, 0);
+
 	return min;
 }
+EXPORT_SYMBOL_GPL(pool_pop_min);
 
-long* pool_peek_min(struct LimePagePool* heap)
+struct LimePageContext* pool_peek_min(struct LimePagePool* heap)
 {
-	return heap->LPC[0].hyp_vaddr;
+	return heap->pool[0];
 }
-
-int pool_get_size(struct LimePagePool* heap)
-{
-	return heap->size;
-}
+EXPORT_SYMBOL_GPL(pool_peek_min);

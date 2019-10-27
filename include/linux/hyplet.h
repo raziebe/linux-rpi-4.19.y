@@ -142,10 +142,10 @@ struct LimePageContext{
 	unsigned long phy_addr; // Original physical address of this page (from iomem) -> lime pool heap should be compared by this
 	unsigned char state; 	// State of page in the pool
 	// TODO: add synchronize method for accessing this struct from different cpu's | e.g make state atomic or add semaphores, etc..
-}
+};
 
 struct LimePagePool {
-	struct LimePageContext LPC[POOL_SIZE];
+	struct LimePageContext pool[POOL_SIZE];
 	int size; // Current size of the pool
 
 	// TODO: find purpose if one exists for this variable
@@ -153,11 +153,11 @@ struct LimePagePool {
 };
 
 /* Heap / priority_queue functions for the lime pool */
-void  pool_heapify(struct LimePagePool* heap);
-void  pool_insert(struct LimePagePool* heap, long* key);
-long* pool_pop_min(struct LimePagePool* heap);
-long* pool_peek_min(struct LimePagePool* heap);
+void pool_heapify(struct LimePagePool* heap);
+void pool_insert(struct LimePagePool* heap, struct LimePageContext); /* LimePageContext will be copied by value */
 
+struct 	LimePageContext* pool_pop_min(struct LimePagePool* heap);
+struct 	LimePageContext* pool_peek_min(struct LimePagePool* heap);
 
 struct hyplet_vm {
 	unsigned int irq_to_trap __attribute__ ((packed));
