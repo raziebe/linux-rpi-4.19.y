@@ -147,13 +147,14 @@ static void map_range_to_el2(struct resource * res)
             // We can't map partial pages and
             // the linux kernel doesn't use them anyway
             printk("Partial page: vaddr %p size: %lu", (void *) i, (unsigned long) is);
-        } else{
+        } 
+		else{
 
-	    rc = hyp_map_physical((unsigned long *)(i),
-				(unsigned long *)(i + PAGE_SIZE), PAGE_HYP);
-	    if (rc < 0 ){
-		printk("Failed to hyp map page = %lld\n",i);
-	    }
+			rc = hyp_map_physical((unsigned long *)(i),
+					(unsigned long *)(i + PAGE_SIZE), PAGE_HYP);
+			if (rc < 0 ){
+				printk("Failed to hyp map page = %lld\n",i);
+			}
 	   
         }
     }
@@ -189,37 +190,46 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	long pfn;
 	struct LimePagePool* lp = NULL;
 
-	// first clean the attributes bits: address is in bits 47..12
+	// First clean the attributes bits: address is in bits 47..12
 	phy_addr &= 0xFFFFFFFFF000;
+
 	// Find the descriptor in the MMU
 	desc = ipa_find_page_desc(vm, phy_addr);
-	// return descriptor to its RW
+
+	// Return descriptor to its RW
 	*desc = make_special_page_desc(phy_addr, S2_PAGE_ACCESS_RW);
 	hyplet_invld_ipa_tlb(phy_addr >> 12);
 	vm->ipa_pages_processed++;
-	// copy its content
+
 	if (is_device_mem(vm, phy_addr)){
 		return 0x99;
 	}
 	
 	if(!vm->limePool)
-		return -1;
+	{
+		//printk(KERN_WARNING "hyplet_handle_abrt: vm->limePool ");
+	}	return -1;
 
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
 	pfn = (phy_addr >> PAGE_SHIFT);
 
+	// copy its content
 	if (!is_black_listed(pfn)){
 		unsigned char *p = (unsigned char *)phy_addr;
 
 		//lp->cur = (lp->cur +1) % POOL_SIZE;
 		vm->cur_phy_addr = phy_addr;
 
-		/* Insert a page to the pool */
+		/* Find page thats not used in the pool */
 		struct LimePageContext* slot =  pool_find_empty_slot(lp);
-		slot->phy_addr = phy_addr;
 		
+		slot->phy_addr = phy_addr;
+
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
+		// return 0; works
+
+		/* Insert the page to the pool */
 		pool_insert_one(lp);
 	}
 
@@ -239,6 +249,11 @@ int setup_lime_pool(void)
 	struct page *pg;
 
 	limepool = kmalloc( sizeof(struct LimePagePool), GFP_KERNEL);
+	if(!limepool)
+	{
+		printk("Limepool kmalloc failed");
+		return -1;
+	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
 
 	for_each_possible_cpu(cpu){
@@ -283,6 +298,8 @@ void turn_on_acq(void)
 		return;
 	}
 	printk("Marking all pages RO\n");
+	printk(KERN_WARNING "Fnished turn_on_acq\n");
+	
 	hyplet_call_hyp((void *)KERN_TO_HYP(walk_ipa_el2), KERN_TO_HYP(vm),
 			S2_PAGE_ACCESS_R);
 }
