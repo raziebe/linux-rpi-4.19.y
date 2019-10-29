@@ -396,28 +396,33 @@ int hyplet_ctl(unsigned long arg)
 
 
 /* Lime pool functions */
-// TODO: make sure this is atomic / synchronized well
 void   __hyp_text pool_heapify(struct LimePagePool* heap, int index)
 {	
-	int min = index;
+	int min;
 	int cur_size = heap->size;
-	int left  = (2 * index) + 1;
-	int right = (2 * index) + 2;
-
-	if( left < cur_size && heap->pool[left].phy_addr < heap->pool[index].phy_addr)
-		min = left;
-
-	if (right < cur_size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
-		min = right;
-
-	if(min != index) {
-		// TODO: fix bugs or optimize this code for faster swapping (array of pointer to structs instead of array of structs)
-		struct LimePageContext	temp = heap->pool[index];
-		heap->pool[index] = heap->pool[min];
-		heap->pool[min] = temp;
-		/* Please remove recursion. We do not have a enough stack for that  */
-		pool_heapify(heap, min);
+	int left;
+	int right;
+	while(index <= cur_size){
+		left  = (2 * index) + 1;
+		right = (2 * index) + 2;
+		min = index;
+		if( left < cur_size && heap->pool[left].phy_addr < heap->pool[index].phy_addr)
+			min = left;
+		
+		if (right < cur_size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
+			min = right;
+	
+		if(min != index) {
+			/* swapping the min value */
+			struct LimePageContext	temp = heap->pool[index];
+			heap->pool[index] = heap->pool[min];
+			heap->pool[min] = temp;
+			index = min;			
+		}
+		else break;
+	
 	}
+	
 }
 EXPORT_SYMBOL_GPL(pool_heapify);
 

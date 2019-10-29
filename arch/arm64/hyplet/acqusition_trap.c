@@ -211,7 +211,6 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	}	return -1;
 
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
-	spin_lock_init(&lp->lock);
 	pfn = (phy_addr >> PAGE_SHIFT);
 
 	// copy its content
@@ -261,7 +260,7 @@ int setup_lime_pool(void)
 		return -1;
 	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
-
+	spin_lock_init(&limepool->lock)
 	for_each_possible_cpu(cpu){
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
