@@ -211,21 +211,17 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	}	return -1;
 
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
-	spin_lock_init(&lp->lock);
 	pfn = (phy_addr >> PAGE_SHIFT);
 
 	// copy its content
 	if (!is_black_listed(pfn)){
-
-		struct LimePageContext* slot;
 		unsigned char *p = (unsigned char *)phy_addr;
 
 		//lp->cur = (lp->cur +1) % POOL_SIZE;
 		vm->cur_phy_addr = phy_addr;
-		/* spin locking the page pool(critical section) */
-		spin_lock(&lp->lock);
+
 		/* Find page thats not used in the pool */
-		slot =  pool_find_empty_slot(lp);
+		struct LimePageContext* slot =  pool_find_empty_slot(lp);
 		
 		slot->phy_addr = phy_addr;
 
@@ -235,8 +231,6 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 
 		/* Insert the page to the pool */
 		pool_insert_one(lp);
-		/* unlocking the lime pool(critical section) */
-		spin_unlock(&lp->lock)
 	}
 
 	return 0;

@@ -231,8 +231,11 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
+<<<<<<< HEAD
 		// return 0; works
-
+		
+=======
+>>>>>>> c9eb02ee349ba0938a70479f536856c7368a7e0c
 		/* Insert the page to the pool */
 		pool_insert_one(lp);
 		/* unlocking the lime pool(critical section) */

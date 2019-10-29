@@ -397,7 +397,7 @@ int hyplet_ctl(unsigned long arg)
 
 /* Lime pool functions */
 // TODO: make sure this is atomic / synchronized well
-void pool_heapify(struct LimePagePool* heap, int index)
+void   __hyp_text pool_heapify(struct LimePagePool* heap, int index)
 {	
 	int min = index;
 	int cur_size = heap->size;
@@ -410,24 +410,24 @@ void pool_heapify(struct LimePagePool* heap, int index)
 	if (right < cur_size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
 		min = right;
 
-	if(min != index)
-	{
+	if(min != index) {
 		// TODO: fix bugs or optimize this code for faster swapping (array of pointer to structs instead of array of structs)
 		struct LimePageContext	temp = heap->pool[index];
 		heap->pool[index] = heap->pool[min];
 		heap->pool[min] = temp;
+		/* Please remove recursion. We do not have a enough stack for that  */
 		pool_heapify(heap, min);
 	}
 }
 EXPORT_SYMBOL_GPL(pool_heapify);
 
-struct LimePageContext* pool_find_empty_slot(struct LimePagePool* heap)
+struct LimePageContext* __hyp_text pool_find_empty_slot(struct LimePagePool* heap)
 {
 	return &(heap->pool[heap->size]);
 }
 EXPORT_SYMBOL_GPL(pool_find_empty_slot);
 
-void pool_insert_one(struct LimePagePool* heap)
+void __hyp_text pool_insert_one(struct LimePagePool* heap)
 {
 	heap->size += 1;
 	//heap->pool[heap->size - 1].phy_addr = key;
