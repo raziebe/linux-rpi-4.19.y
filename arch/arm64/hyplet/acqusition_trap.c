@@ -235,7 +235,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		/* Insert the page to the pool */
 		pool_insert_one(lp);
 		/* unlocking the lime pool(critical section) */
-		spin_unlock(&lp->lock)
+		spin_unlock(&lp->lock);
 	}
 
 	return 0;
@@ -260,7 +260,8 @@ int setup_lime_pool(void)
 		return -1;
 	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
-	spin_lock_init(&limepool->lock)
+	spin_lock_init(&limepool->lock);
+
 	for_each_possible_cpu(cpu){
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
