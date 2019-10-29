@@ -147,7 +147,8 @@ struct LimePageContext{
 struct LimePagePool {
 	struct LimePageContext pool[POOL_SIZE];
 	int size; // Current size of the pool
-
+	spinlock_t lock;// The spin lock for the lime page pool
+	unsigned atomic_long_t lime_current_place; 
 	// TODO: find purpose if one exists for this variable
 	int cur;
 };
