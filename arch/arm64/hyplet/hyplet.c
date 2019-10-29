@@ -396,35 +396,61 @@ int hyplet_ctl(unsigned long arg)
 
 
 /* Lime pool functions */
-void   __hyp_text pool_heapify(struct LimePagePool* heap, int index)
+void __hyp_text pool_heapify_insertion(struct LimePagePool* heap)
 {	
-	int min;
-	int cur_size = heap->size;
-	int left;
-	int right;
-	while(index <= cur_size){
-		left  = (2 * index) + 1;
-		right = (2 * index) + 2;
-		min = index;
-		if( left < cur_size && heap->pool[left].phy_addr < heap->pool[index].phy_addr)
-			min = left;
-		
-		if (right < cur_size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
-			min = right;
-	
-		if(min != index) {
-			/* swapping the min value */
-			struct LimePageContext	temp = heap->pool[index];
-			heap->pool[index] = heap->pool[min];
-			heap->pool[min] = temp;
-			index = min;			
-		}
-		else break;
-	
+	int index = heap->size - 1; // assume new element waits in this index
+
+	while (index >= 0)
+	{
+		int father;
+
+		/* index is right child, else left child */
+		if (index % 2 == 0)
+			father = (index - 2) / 2;
+		else
+			father = (index - 1) / 2;
+
+		/* If son is bigger then father we're done*/
+		if (father < 0 || heap->pool[index].phy_addr >= heap->pool[father].phy_addr)
+			return;
+
+		/* swap */
+		struct LimePageContext temp = heap->pool[index];
+		heap->pool[index] = heap->pool[father];
+		heap->pool[father] = temp;
+		index = father;
 	}
-	
 }
-EXPORT_SYMBOL_GPL(pool_heapify);
+EXPORT_SYMBOL_GPL(pool_heapify_insertion);
+
+void pool_heapify_removal(struct LimePagePool* heap, int index)
+{
+	while (index < heap->size)
+	{
+		int left = (2 * index) + 1;
+		int right = (2 * index) + 2;
+		int min = index;
+
+		/* If left son is smaller then current */
+		if (left < heap->size && heap->pool[left].phy_addr < heap->pool[index].phy_addr)
+			min = left;
+
+		/* If right son is smaller then left or current */
+		if (right < heap->size && heap->pool[right].phy_addr < heap->pool[min].phy_addr)
+			min = right;
+
+		// if minimum is original index, we're done
+		if (min == index)
+			return;
+
+		/* swap */
+		struct LimePageContext temp = heap->pool[index];
+		heap->pool[index] = heap->pool[min];
+		heap->pool[min] = temp;
+		index = min;
+	}
+}
+EXPORT_SYMBOL_GPL(pool_heapify_removal);
 
 struct LimePageContext* __hyp_text pool_find_empty_slot(struct LimePagePool* heap)
 {
@@ -436,7 +462,7 @@ void __hyp_text pool_insert_one(struct LimePagePool* heap)
 {
 	heap->size += 1;
 	//heap->pool[heap->size - 1].phy_addr = key;
-	pool_heapify(heap, heap->size - 1);
+	pool_heapify_insertion(heap);
 }
 EXPORT_SYMBOL_GPL(pool_insert_one);
 
@@ -444,7 +470,7 @@ void pool_pop_min(struct LimePagePool* heap)
 {
 	if(heap->size < 1)
 	{
-		printk("pool_pop_min heap->size < 1");
+		printk(KERN_EMERG "pool_pop_min heap->size < 1");
 		return; // This should not happen..., TODO; return success value?
 	}
 	struct LimePageContext min = heap->pool[0];
@@ -453,7 +479,7 @@ void pool_pop_min(struct LimePagePool* heap)
 	heap->pool[heap->size - 1] = min;
 	heap->size--;
 
-	pool_heapify(heap, 0);
+	pool_heapify_removal(heap, 0);
 }
 EXPORT_SYMBOL_GPL(pool_pop_min);
 

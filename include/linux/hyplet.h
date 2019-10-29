@@ -154,7 +154,8 @@ struct LimePagePool {
 };
 
 /* Heap / priority_queue functions for the lime pool */
-void pool_heapify(struct LimePagePool* heap, int index);
+void pool_heapify_insertion(struct LimePagePool* heap);
+void pool_heapify_removal(struct LimePagePool* heap, int index);
 
 /* Returns the slot in [size + 1] for the caller to fill. after that, please call insert_one() to apply changes */
 struct LimePageContext* pool_find_empty_slot(struct LimePagePool* heap);
