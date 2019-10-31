@@ -204,38 +204,37 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	if (is_device_mem(vm, phy_addr)){
 		return 0x99;
 	}
-	
+
 	if(!vm->limePool)
-	{
-		//printk(KERN_WARNING "hyplet_handle_abrt: vm->limePool ");
-	}	return -1;
+		return -1;
 
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
 	pfn = (phy_addr >> PAGE_SHIFT);
 
 	// copy its content
 	if (!is_black_listed(pfn)){
-
 		struct LimePageContext* slot;
 		unsigned char *p = (unsigned char *)phy_addr;
 
-		//lp->cur = (lp->cur +1) % POOL_SIZE;
 		vm->cur_phy_addr = phy_addr;
+
 		/* spin locking the page pool(critical section) */
-		spin_lock(&lp->lock);
+		//spin_lock(&lp->lock);
+
+		//Should not happen TODO fix
+		if(lp->size > POOL_SIZE)
+			return 0;
 		/* Find page thats not used in the pool */
 		slot =  pool_find_empty_slot(lp);
-		
 		slot->phy_addr = phy_addr;
 
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
-		// return 0; works
-
 		/* Insert the page to the pool */
 		pool_insert_one(lp);
+
 		/* unlocking the lime pool(critical section) */
-		spin_unlock(&lp->lock);
+		//spin_unlock(&lp->lock);
 	}
 
 	return 0;
@@ -249,7 +248,7 @@ int setup_lime_pool(void)
 	int cpu;
 	int rc;
 	int i;
-	struct LimePagePool* limepool;
+	struct LimePagePool* limepool = NULL;
 	struct hyplet_vm *vm;
 	struct page *pg;
 
@@ -266,6 +265,7 @@ int setup_lime_pool(void)
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
 	}
+
 	rc  = create_hyp_mappings(limepool, limepool + sizeof(*limepool), PAGE_HYP);
 	if (rc){
 		printk("Cannot map limepool\n");
@@ -301,10 +301,11 @@ void turn_on_acq(void)
 	walk_on_mmu_el1();
 	map_system_ram_to_hypervisor();
 	if (setup_lime_pool()){
+		printk(KERN_EMERG "SETUP LIME POOL FAILED\n");
 		return;
 	}
-	printk("Marking all pages RO\n");
-	printk(KERN_WARNING "Fnished turn_on_acq\n");
+	printk(KERN_EMERG "Marking all pages RO\n");
+	printk(KERN_EMERG "Fnished turn_on_acq\n");
 	
 	hyplet_call_hyp((void *)KERN_TO_HYP(walk_ipa_el2), KERN_TO_HYP(vm),
 			S2_PAGE_ACCESS_R);
@@ -346,6 +347,12 @@ static ssize_t proc_read(struct file *filp, char __user * page,
  				vm->cur_phy_addr);
 	}
 	len += sprintf(page + len, "Nr Io Addresses %ld\n",get_ioaddressesNR());
+
+	while(hyplet_get_vm()->limePool->size != 0)
+	{
+			len += sprintf(page + len, "size = %d / phy_addr = %p\n", hyplet_get_vm()->limePool->size, (void*)pool_peek_min(hyplet_get_vm()->limePool)->phy_addr);
+			pool_pop_min(hyplet_get_vm()->limePool);
+	}
 	filp->private_data = 0x00;
 	return len;
 }
