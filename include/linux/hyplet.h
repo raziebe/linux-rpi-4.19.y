@@ -135,11 +135,12 @@ struct IoMemAddr {
 
 #define LiME_POOL_PAGE_OCCUPIED	0x1
 #define LiME_POOL_PAGE_FREE	0x0
-#define POOL_SIZE			800
+#define POOL_SIZE			800 / 4
 
 struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
 	unsigned long phy_addr; // Original physical address of this page (from iomem) -> lime pool heap should be compared by this
+	//atomic_long_t state;	
 	//unsigned char state; 	// State of page in the pool
 	// TODO: add synchronize method for accessing this struct from different cpu's | e.g make state atomic or add semaphores, etc..
 };

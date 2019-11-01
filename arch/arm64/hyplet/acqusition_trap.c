@@ -222,16 +222,18 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		//spin_lock(&lp->lock);
 
 		//Should not happen TODO fix
-		if(lp->size > POOL_SIZE)
-			return 0;
+		//if(lp->size > POOL_SIZE)
+		//	return 0;
+
 		/* Find page thats not used in the pool */
-		slot =  pool_find_empty_slot(lp);
+		//slot =  pool_find_empty_slot(lp);
+		slot = &lp->pool[lp->size++ % POOL_SIZE]; // RR 
 		slot->phy_addr = phy_addr;
 
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
 		/* Insert the page to the pool */
-		pool_insert_one(lp);
+		//pool_insert_one(lp);
 
 		/* unlocking the lime pool(critical section) */
 		//spin_unlock(&lp->lock);
