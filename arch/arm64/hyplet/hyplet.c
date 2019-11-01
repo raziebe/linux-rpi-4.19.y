@@ -461,6 +461,7 @@ EXPORT_SYMBOL_GPL(pool_find_empty_slot);
 void __hyp_text pool_insert_one(struct LimePagePool* heap)
 {
 	heap->size += 1;
+	heap->size %= POOL_SIZE;
 	//heap->pool[heap->size - 1].phy_addr = key;
 	pool_heapify_insertion(heap);
 }
