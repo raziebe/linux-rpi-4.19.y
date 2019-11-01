@@ -1,6 +1,8 @@
 #ifndef __HYPLET_H_
 #define __HYPLET_H_
 
+#include <linux/hyp_spinlock.h>
+
 // page 1775
 #define DESC_TABLE_BIT 			( UL(1) << 1 )
 #define DESC_VALID_BIT 			( UL(1) << 0 )
@@ -148,7 +150,7 @@ struct LimePageContext{
 struct LimePagePool {
 	struct LimePageContext pool[POOL_SIZE];
 	int size; // Current size of the pool
-	spinlock_t lock;// The spin lock for the lime page pool
+	hyp_spinlock_t lock;// The spin lock for the lime page pool
 	atomic_long_t lime_current_place; 
 	// TODO: find purpose if one exists for this variable
 	int cur;

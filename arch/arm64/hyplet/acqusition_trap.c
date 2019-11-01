@@ -219,7 +219,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		vm->cur_phy_addr = phy_addr;
 
 		/* spin locking the page pool(critical section) */
-		//spin_lock(&lp->lock);
+		hyp_spin_lock(&lp->lock);
 
 		/* Find page thats not used in the pool */
 		slot =  pool_find_empty_slot(lp);
@@ -233,7 +233,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		pool_insert_one(lp);
 
 		/* unlocking the lime pool(critical section) */
-		//spin_unlock(&lp->lock);
+		hyp_spin_unlock(&lp->lock);
 	}
 
 	return 0;
@@ -258,7 +258,7 @@ int setup_lime_pool(void)
 		return -1;
 	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
-	spin_lock_init(&limepool->lock);
+	hyp_spin_lock_init(&limepool->lock);
 
 	for_each_possible_cpu(cpu){
 		vm = hyplet_get(cpu);
