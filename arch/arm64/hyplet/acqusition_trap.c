@@ -222,7 +222,7 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 		//spin_lock(&lp->lock);
 
 		//Should not happen TODO fix
-		if(lp->size > POOL_SIZE)
+		if(lp->size >= POOL_SIZE)
 			return 0;
 		/* Find page thats not used in the pool */
 		slot =  pool_find_empty_slot(lp);
@@ -252,40 +252,41 @@ int setup_lime_pool(void)
 	struct hyplet_vm *vm;
 	struct page *pg;
 
-	limepool = kmalloc( sizeof(struct LimePagePool), GFP_KERNEL);
-	if(!limepool)
-	{
-		printk("Limepool kmalloc failed");
-		return -1;
-	}
-	memset(limepool, 0x00, sizeof(struct LimePagePool));
-	spin_lock_init(&limepool->lock);
-
 	for_each_possible_cpu(cpu){
+		limepool = kmalloc( sizeof(struct LimePagePool), GFP_KERNEL);
+		if(!limepool)
+		{
+			printk("Limepool kmalloc failed");
+			return -1;
+		}
+		memset(limepool, 0x00, sizeof(struct LimePagePool));
+		spin_lock_init(&limepool->lock);
+
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
-	}
 
-	rc  = create_hyp_mappings(limepool, limepool + sizeof(*limepool), PAGE_HYP);
-	if (rc){
-		printk("Cannot map limepool\n");
-		return -1;
-	}
-
-	/* Allocate space for each page in the pool */
-	for (i = 0 ; i < POOL_SIZE; i++) {
-		void *v;
-
-		pg = alloc_page(GFP_KERNEL);
-		v =  kmap(pg);
-		rc  = create_hyp_mappings(v, v + PAGE_SIZE - 1, PAGE_HYP);
+		rc  = create_hyp_mappings(limepool, limepool + sizeof(*limepool), PAGE_HYP);
 		if (rc){
-			printk("Cannot map hyp %d \n",i);
+			printk("Cannot map limepool\n");
+			return -1;
 		}
 
-		/* Put pointer to allocated page in the pool */
-		limepool->pool[i].hyp_vaddr = (long *)v;
+		/* Allocate space for each page in the pool */
+		for (i = 0 ; i < POOL_SIZE; i++) {
+			void *v;
+
+			pg = alloc_page(GFP_KERNEL);
+			v =  kmap(pg);
+			rc  = create_hyp_mappings(v, v + PAGE_SIZE - 1, PAGE_HYP);
+			if (rc){
+				printk("Cannot map hyp %d \n",i);
+			}
+
+			/* Put pointer to allocated page in the pool */
+			limepool->pool[i].hyp_vaddr = (long *)v;
+		}
 	}
+
 	return 0;
 }	
 EXPORT_SYMBOL_GPL(setup_lime_pool);

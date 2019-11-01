@@ -135,7 +135,7 @@ struct IoMemAddr {
 
 #define LiME_POOL_PAGE_OCCUPIED	0x1
 #define LiME_POOL_PAGE_FREE	0x0
-#define POOL_SIZE			800
+#define POOL_SIZE			800 / 4
 
 struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
