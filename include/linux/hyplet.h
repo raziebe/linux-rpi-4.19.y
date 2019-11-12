@@ -142,30 +142,39 @@ struct IoMemAddr {
 struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
 	unsigned long phy_addr; // Original physical address of this page
-	int state;	// States if this struct's memory space is occupied or not TODO atomic...
+	char state;	// States if this struct's memory space is occupied or not TODO atomic...
 };
 
+struct IomemAddressRange{
+	unsigned long start_phys_addr;
+	unsigned long end_phys_addr;
+};
+
+
+#define RASPBERRY_PI3_B_PLUS_NUM_PAGES ((1 * 1024 * 1024 * 1024) / PAGE_SIZE) // 1 GB / sizeof page
+#define PAGE_PROCESSED_SIZE (RASPBERRY_PI3_B_PLUS_NUM_PAGES / 8) // num_pages / sizeof(char) in bits == number of chars needed to represent every page in memory
+
+#define SET_PAGE_TO_SENT(BitField, page_index) ( BitField[((page_index) / 8)] |= (1 << ((page_index) % 8)) )
+#define IS_PAGE_SENT(BitField, page_index)     ( BitField[((page_index) / 8)] &  (1 << ((page_index) % 8)) )
+//#define ClearBit(A,k) ( A[(k / 32)] &= ~(1 << (k % 32)) )            
+
 struct LimePagePool {
-	struct LimePageContext pool[POOL_SIZE];
-	int size; // Current size of the pool TODO convert to atomic
 	hyp_spinlock_t lock;// The spin lock for the lime page pool
-	unsigned long lime_current_place; // TODO convert to atomic
+	
+	int size; // Current size of the pool TODO convert to atomic
+	struct LimePageContext pool[POOL_SIZE];
+
+	unsigned char* page_processed ; // A giant bitfield of size PAGE_PROCESSED_SIZE -  roughly ~27500 chars ==> num_of_pages bits
+	unsigned long lime_current_page_index; // update this every iteration of lime TODO: how to calculate index by physical address? (phy_addr - base_phy_addr) / 4096 ==> should give the page index
+	
+	int iomem_ranges_size;
+	struct IomemAddressRange* iomem_address_ranges; // holds iomem RAM ranges for calculations of 'page_processed' indeces
+
+	unsigned long lime_current_page_phys_addr; // foreach iomem_range in iomem_address_ranges : if X in iomem_range then return (X - start_phy_addr) / 4096 + sum((iomems_before.end - iomemms_before.start) / 4096)  ==> index in bitfield
 	// TODO: find purpose if one exists for this variable
 	int cur;
 };
 
-/* Heap / priority_queue functions for the lime pool */
-void pool_heapify_insertion(struct LimePagePool* heap);
-void pool_heapify_removal(struct LimePagePool* heap, int index);
-
-/* Returns the slot in [size + 1] for the caller to fill. after that, please call insert_one() to apply changes */
-struct LimePageContext* pool_find_empty_slot(struct LimePagePool* heap);
-
- /* Call find_empty_slot to add an item and then immediately call this function */
-void pool_insert_one(struct LimePagePool* heap);
-
-void pool_pop_min(struct LimePagePool* heap);
-struct LimePageContext* pool_peek_min(struct LimePagePool* heap);
 
 struct hyplet_vm {
 	unsigned int irq_to_trap __attribute__ ((packed));

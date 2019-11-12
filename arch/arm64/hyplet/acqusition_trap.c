@@ -253,15 +253,19 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 }
 
 
+extern struct resource iomem_resource;
 
-/* Called From LiME right before turning on the acqusion */
+/* Called From LiME right before turning on the acquisition */
 int setup_lime_pool(void)
 {
+	int iomem_address_ranges_count = 0;
 	int cpu;
 	int rc;
 	int i;
+
 	struct LimePagePool* limepool = NULL;
 	struct hyplet_vm *vm;
+	struct resource *p;
 	struct page *pg;
 
 	limepool = kmalloc( sizeof(struct LimePagePool), GFP_KERNEL);
@@ -271,44 +275,81 @@ int setup_lime_pool(void)
 		return -1;
 	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
-
-	// limepool->lime_current_place = 0; // Convert to atomic
-
 	hyp_spin_lock_init(&limepool->lock);
 
-	for_each_possible_cpu(cpu){
-		limepool = kmalloc( sizeof(struct LimePagePool), GFP_KERNEL);
-		if(!limepool)
-		{
-			printk("Limepool kmalloc failed");
-			return -1;
-		}
-		memset(limepool, 0x00, sizeof(struct LimePagePool));
-		hyp_spin_lock_init(&limepool->lock);
+	/* count RAM ranges in iomem */
+	for (p = iomem_resource.child; p ; p = p->sibling)
+		if (strcmp(p->name, "System RAM") == 0)
+			iomem_address_ranges_count++;
 
+	/* allocate pool->iomem structure */
+	limepool->iomem_address_ranges = kmalloc(iomem_address_ranges_count * sizeof(struct IomemAddressRange), GFP_KERNEL);
+	if(!limepool->iomem_address_ranges)
+	{
+		printk("Limepool->iomem_address_ranges kmalloc failed");
+		return -1;
+	}
+	memset(limepool->iomem_address_ranges, 0x00, sizeof(struct IomemAddressRange) * iomem_address_ranges_count);
+
+
+	limepool->page_processed = kmalloc(sizeof(unsigned char) * PAGE_PROCESSED_SIZE, GFP_KERNEL);
+	if(!limepool->page_processed)
+	{
+		printk("Limepool->page_processed kmalloc failed");
+		return -1;
+	}
+	memset(limepool->page_processed, 0x00, sizeof(unsigned char) * PAGE_PROCESSED_SIZE);
+
+	/* iterate through iomem and put the ram address ranges in the pool->iomem structure */
+	for (p = iomem_resource.child; p ; p = p->sibling)
+		if (strcmp(p->name, "System RAM") == 0)
+		{
+			limepool->iomem_address_ranges[limepool->iomem_ranges_size].start_phys_addr = p->start;
+			limepool->iomem_address_ranges[limepool->iomem_ranges_size].end_phys_addr = p->end; 
+			limepool->iomem_ranges_size++;
+		}
+
+
+	for_each_possible_cpu(cpu){
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
+	}
 
-		rc  = create_hyp_mappings(limepool, limepool + sizeof(*limepool), PAGE_HYP);
+	rc  = create_hyp_mappings(limepool, limepool + sizeof(*limepool), PAGE_HYP);
+	if (rc){
+		printk("Cannot map limepool\n");
+		return -1;
+	}
+	printk("Mapped limepool\n");
+
+	rc  = create_hyp_mappings(limepool->page_processed, limepool->page_processed + sizeof(*(limepool->page_processed)), PAGE_HYP);
+	if (rc){
+		printk("Cannot map limepool->page_processed\n");
+		return -1;
+	}
+	printk("Mapped limepool->page_processed\n");
+
+
+	rc  = create_hyp_mappings(limepool->iomem_address_ranges, limepool->iomem_address_ranges + sizeof(*(limepool->iomem_address_ranges)), PAGE_HYP);
+	if (rc){
+		printk("Cannot map limepool->iomem_address_ranges\n");
+		return -1;
+	}
+	printk("Mapped limepool->iomem_adress_ranges\n");
+
+	/* Allocate space for each page in the pool */
+	for (i = 0 ; i < POOL_SIZE; i++) {
+		void *v;
+
+		pg = alloc_page(GFP_KERNEL);
+		v =  kmap(pg);
+		rc  = create_hyp_mappings(v, v + PAGE_SIZE - 1, PAGE_HYP);
 		if (rc){
-			printk("Cannot map limepool\n");
-			return -1;
+			printk("Cannot map hyp %d \n",i);
 		}
 
-		/* Allocate space for each page in the pool */
-		for (i = 0 ; i < POOL_SIZE; i++) {
-			void *v;
-
-			pg = alloc_page(GFP_KERNEL);
-			v =  kmap(pg);
-			rc  = create_hyp_mappings(v, v + PAGE_SIZE - 1, PAGE_HYP);
-			if (rc){
-				printk("Cannot map hyp %d \n",i);
-			}
-
-			/* Put pointer to allocated page in the pool */
-			limepool->pool[i].hyp_vaddr = (long *)v;
-		}
+		/* Put pointer to allocated page in the pool */
+		limepool->pool[i].hyp_vaddr = (long *)v;
 	}
 
 	return 0;
@@ -389,6 +430,12 @@ static ssize_t proc_read(struct file *filp, char __user * page,
 					phy_addr,
 					pool_min->state);
 		}
+
+		for( i = 0; i < hyplet_get_vm()->limePool->iomem_ranges_size; i++ )
+			len += sprintf(page + len,
+					"iomem address start = %lx end = %lx\n", 
+					hyplet_get_vm()->limePool->iomem_address_ranges[i].start_phys_addr,
+					hyplet_get_vm()->limePool->iomem_address_ranges[i].end_phys_addr);
 	}
 	filp->private_data = 0x00;
 	return len;
