@@ -137,21 +137,19 @@ struct IoMemAddr {
 
 #define LiME_POOL_PAGE_OCCUPIED	0x1
 #define LiME_POOL_PAGE_FREE	0x0
-#define POOL_SIZE			800
+#define POOL_SIZE			500
 
 struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
-	unsigned long phy_addr; // Original physical address of this page (from iomem) -> lime pool heap should be compared by this
-	//atomic_long_t state;	
-	//unsigned char state; 	// State of page in the pool
-	// TODO: add synchronize method for accessing this struct from different cpu's | e.g make state atomic or add semaphores, etc..
+	unsigned long phy_addr; // Original physical address of this page
+	int state;	// States if this struct's memory space is occupied or not TODO atomic...
 };
 
 struct LimePagePool {
 	struct LimePageContext pool[POOL_SIZE];
-	int size; // Current size of the pool
+	int size; // Current size of the pool TODO convert to atomic
 	hyp_spinlock_t lock;// The spin lock for the lime page pool
-	atomic_long_t lime_current_place; 
+	unsigned long lime_current_place; // TODO convert to atomic
 	// TODO: find purpose if one exists for this variable
 	int cur;
 };
@@ -202,7 +200,10 @@ struct hyplet_vm {
 	int ipa_pages_processed;
 	long hyp_memstart_addr;
 	struct IoMemAddr* iomemaddr;
+
 	struct LimePagePool* limePool;
+	/* counts everytime an occupied slot in the pool has to get overwritten as to not deadlock the system (with LiME sending and freeing slots, this counter should equals 0) */
+	int pool_page_overwrite_counter;
 } __attribute__ ((aligned (8)));
 
 struct hyp_wait{

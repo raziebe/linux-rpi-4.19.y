@@ -208,32 +208,45 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	if(!vm->limePool)
 		return -1;
 
+	//if(vm->limePool->size + 1 >= POOL_SIZE)
+	//	return 0;
+
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
 	pfn = (phy_addr >> PAGE_SHIFT);
 
-	// copy its content
+	// copy page content into pool
 	if (!is_black_listed(pfn)){
+		int index = 0;
 		struct LimePageContext* slot;
 		unsigned char *p = (unsigned char *)phy_addr;
 
 		vm->cur_phy_addr = phy_addr;
 
-		/* spin locking the page pool(critical section) */
-		hyp_spin_lock(&lp->lock);
+		/* spin locking the page pool */
+		//hyp_spin_lock(&lp->lock);
 
-		/* Find page thats not used in the pool */
-		slot =  pool_find_empty_slot(lp);
-		lp->size = lp->size % POOL_SIZE;
-		slot = &lp->pool[lp->size % POOL_SIZE]; // RR 
+		/* find empty slot in pool */
+		for (; index < POOL_SIZE; index++)
+			if(lp->pool[index].state == LiME_POOL_PAGE_FREE)
+				break;
+
+		/* no empty slot was found */
+		if(index >= POOL_SIZE)
+		{
+			vm->pool_page_overwrite_counter++;
+			/* default to index 0 */
+			index = 0;
+		}
+
+		slot = &( lp->pool[index] ); 
+
 		slot->phy_addr = phy_addr;
+		slot->state = LiME_POOL_PAGE_OCCUPIED;
 
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
-		/* Insert the page to the pool */
-		pool_insert_one(lp);
-
-		/* unlocking the lime pool(critical section) */
-		hyp_spin_unlock(&lp->lock);
+		/* unlocking the lime pool */
+		//hyp_spin_unlock(&lp->lock);
 	}
 
 	return 0;
@@ -258,6 +271,9 @@ int setup_lime_pool(void)
 		return -1;
 	}
 	memset(limepool, 0x00, sizeof(struct LimePagePool));
+
+	// limepool->lime_current_place = 0; // Convert to atomic
+
 	hyp_spin_lock_init(&limepool->lock);
 
 	for_each_possible_cpu(cpu){
@@ -329,7 +345,7 @@ static int proc_open(struct inode *inode, struct file *filp)
 static ssize_t proc_read(struct file *filp, char __user * page,
 			 size_t size, loff_t * off)
 {
-	ssize_t len = 0;
+	ssize_t len = 0, i = 0;
 	int cpu;
 	long phy_addr = -1;
 	struct LimePageContext* pool_min;
@@ -342,20 +358,27 @@ static ssize_t proc_read(struct file *filp, char __user * page,
 
 		vm = hyplet_get(cpu);
 		len += sprintf(page + len,
-				"%d: pages processed = %d phyaddr=%lx\n",
+				"%d: pages processed = %d phyaddr = %lx pool_page_overwrite = %d\n",
 				cpu,
 				vm->ipa_pages_processed,
- 				vm->cur_phy_addr);
+ 				vm->cur_phy_addr,
+				vm->pool_page_overwrite_counter);
 	}
 
-	if (hyplet_get_vm()->limePool) {
-		pool_min = pool_peek_min(hyplet_get_vm()->limePool);
+	if (hyplet_get_vm()->limePool) { 
+		for (; i < POOL_SIZE; i++)
+		{
+			pool_min = &( hyplet_get_vm()->limePool->pool[i] );
+			
+			if (pool_min != NULL)
+				phy_addr = pool_min->phy_addr;
 
-		if (pool_min != NULL)
-			phy_addr = pool_min->phy_addr;
-		len += sprintf(page + len, "size = %d / phy_addr = %lx\n", 
-				hyplet_get_vm()->limePool->size, 
-				phy_addr);
+			len += sprintf(page + len, 
+					"page[%d]: phy_addr = %lx, state = %d\n",
+					i,
+					phy_addr,
+					pool_min->state);
+		}
 	}
 	filp->private_data = 0x00;
 	return len;
