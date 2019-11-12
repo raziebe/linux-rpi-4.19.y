@@ -284,7 +284,7 @@ int setup_lime_pool(void)
 			return -1;
 		}
 		memset(limepool, 0x00, sizeof(struct LimePagePool));
-		spin_lock_init(&limepool->lock);
+		hyp_spin_lock_init(&limepool->lock);
 
 		vm = hyplet_get(cpu);
 		vm->limePool = limepool;
