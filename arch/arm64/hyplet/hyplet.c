@@ -393,3 +393,20 @@ int hyplet_ctl(unsigned long arg)
 	}
 	return rc;
 }
+
+int phy_addr_to_bitfield_page_index(unsigned long phys_addr)
+{
+	struct LimePagePool* pool = hyplet_get_vm()->limePool;
+	int base_num_pages = 0;
+	int i = 0;
+	for (; i < pool->iomem_ranges_size; i++)
+	{
+		if(phys_addr >= pool->iomem_address_ranges[i].start_phys_addr && phys_addr <= pool->iomem_address_ranges[i].end_phys_addr)
+			return base_num_pages + ((phys_addr - pool->iomem_address_ranges[i].start_phys_addr) / PAGE_SIZE);
+		
+		base_num_pages += (pool->iomem_address_ranges[i].end_phys_addr - pool->iomem_address_ranges[i].start_phys_addr) / PAGE_SIZE; // (end - start) / sizeof(page) = number of pages
+	}
+
+	return -1;
+}
+EXPORT_SYMBOL_GPL(phy_addr_to_bitfield_page_index);

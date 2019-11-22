@@ -1,6 +1,6 @@
-cmd_scripts/kconfig/conf.o := gcc -Wp,-MD,scripts/kconfig/.conf.o.d -Iscripts/kconfig -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -c -o scripts/kconfig/conf.o /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/conf.c
+cmd_scripts/kconfig/conf.o := gcc -Wp,-MD,scripts/kconfig/.conf.o.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89       -c -o scripts/kconfig/conf.o scripts/kconfig/conf.c
 
-source_scripts/kconfig/conf.o := /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/conf.c
+source_scripts/kconfig/conf.o := scripts/kconfig/conf.c
 
 deps_scripts/kconfig/conf.o := \
   /usr/include/stdc-predef.h \
@@ -69,13 +69,13 @@ deps_scripts/kconfig/conf.o := \
   /usr/include/x86_64-linux-gnu/asm/errno.h \
   /usr/include/asm-generic/errno.h \
   /usr/include/asm-generic/errno-base.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/lkc.h \
+  scripts/kconfig/lkc.h \
     $(wildcard include/config/prefix.h) \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/expr.h \
+  scripts/kconfig/expr.h \
   /usr/include/assert.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/list.h \
+  scripts/kconfig/list.h \
   /usr/lib/gcc/x86_64-linux-gnu/5/include/stdbool.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/lkc_proto.h \
+  scripts/kconfig/lkc_proto.h \
 
 scripts/kconfig/conf.o: $(deps_scripts/kconfig/conf.o)
 

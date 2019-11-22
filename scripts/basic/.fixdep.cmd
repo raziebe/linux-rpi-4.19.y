@@ -1,6 +1,6 @@
-cmd_scripts/basic/fixdep := gcc -Wp,-MD,scripts/basic/.fixdep.d -Iscripts/basic -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89   -o scripts/basic/fixdep /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/basic/fixdep.c   
+cmd_scripts/basic/fixdep := gcc -Wp,-MD,scripts/basic/.fixdep.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89         -o scripts/basic/fixdep scripts/basic/fixdep.c   
 
-source_scripts/basic/fixdep := /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/basic/fixdep.c
+source_scripts/basic/fixdep := scripts/basic/fixdep.c
 
 deps_scripts/basic/fixdep := \
     $(wildcard include/config/his/driver.h) \

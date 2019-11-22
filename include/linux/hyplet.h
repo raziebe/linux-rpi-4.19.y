@@ -137,12 +137,14 @@ struct IoMemAddr {
 
 #define LiME_POOL_PAGE_OCCUPIED	0x1
 #define LiME_POOL_PAGE_FREE	0x0
-#define POOL_SIZE			500
+
+#define NUM_POOLS			(4)
+#define POOL_SIZE			(2000 / NUM_POOLS)
 
 struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
 	unsigned long phy_addr; // Original physical address of this page
-	char state;	// States if this struct's memory space is occupied or not TODO atomic...
+	char state;				// States if this struct's memory space is occupied or not TODO atomic...
 };
 
 struct IomemAddressRange{
@@ -161,20 +163,18 @@ struct IomemAddressRange{
 struct LimePagePool {
 	hyp_spinlock_t lock;// The spin lock for the lime page pool
 	
-	int size; // Current size of the pool TODO convert to atomic
-	struct LimePageContext pool[POOL_SIZE];
+	struct LimePageContext* pools[NUM_POOLS]; // array of pointer to pools of size POOL_SIZE
 
-	unsigned char* page_processed ; // A giant bitfield of size PAGE_PROCESSED_SIZE -  roughly ~27500 chars ==> num_of_pages bits
+	unsigned char* page_processed; 		   // A giant bitfield of size PAGE_PROCESSED_SIZE -  roughly ~27500 chars ==> num_of_pages bits
 	unsigned long lime_current_page_index; // update this every iteration of lime TODO: how to calculate index by physical address? (phy_addr - base_phy_addr) / 4096 ==> should give the page index
 	
 	int iomem_ranges_size;
 	struct IomemAddressRange* iomem_address_ranges; // holds iomem RAM ranges for calculations of 'page_processed' indeces
 
-	unsigned long lime_current_page_phys_addr; // foreach iomem_range in iomem_address_ranges : if X in iomem_range then return (X - start_phy_addr) / 4096 + sum((iomems_before.end - iomemms_before.start) / 4096)  ==> index in bitfield
-	// TODO: find purpose if one exists for this variable
-	int cur;
+	//unsigned long lime_current_page_phys_addr; // foreach iomem_range in iomem_address_ranges : if X in iomem_range then return (X - start_phy_addr) / 4096 + sum((iomems_before.end - iomemms_before.start) / 4096)  ==> index in bitfield
 };
 
+int phy_addr_to_bitfield_page_index(unsigned long phys_addr);
 
 struct hyplet_vm {
 	unsigned int irq_to_trap __attribute__ ((packed));

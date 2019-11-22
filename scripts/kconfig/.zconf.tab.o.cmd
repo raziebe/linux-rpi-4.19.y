@@ -1,4 +1,4 @@
-cmd_scripts/kconfig/zconf.tab.o := gcc -Wp,-MD,scripts/kconfig/.zconf.tab.o.d -Iscripts/kconfig -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89  -I/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig -c -o scripts/kconfig/zconf.tab.o scripts/kconfig/zconf.tab.c
+cmd_scripts/kconfig/zconf.tab.o := gcc -Wp,-MD,scripts/kconfig/.zconf.tab.o.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89      -Iscripts/kconfig -c -o scripts/kconfig/zconf.tab.o scripts/kconfig/zconf.tab.c
 
 source_scripts/kconfig/zconf.tab.o := scripts/kconfig/zconf.tab.c
 
@@ -48,13 +48,13 @@ deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/x86_64-linux-gnu/bits/string2.h \
   /usr/include/x86_64-linux-gnu/bits/string3.h \
   /usr/lib/gcc/x86_64-linux-gnu/5/include/stdbool.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/lkc.h \
+  scripts/kconfig/lkc.h \
     $(wildcard include/config/prefix.h) \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/expr.h \
+  scripts/kconfig/expr.h \
   /usr/include/assert.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/list.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/lkc_proto.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/kconf_id.c \
+  scripts/kconfig/list.h \
+  scripts/kconfig/lkc_proto.h \
+  scripts/kconfig/kconf_id.c \
   scripts/kconfig/zconf.lex.c \
   /usr/include/errno.h \
   /usr/include/x86_64-linux-gnu/bits/errno.h \
@@ -75,22 +75,21 @@ deps_scripts/kconfig/zconf.tab.o := \
   /usr/include/x86_64-linux-gnu/bits/confname.h \
   /usr/include/getopt.h \
   /usr/include/x86_64-linux-gnu/bits/unistd.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/util.c \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/lkc.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/confdata.c \
+  scripts/kconfig/util.c \
+  scripts/kconfig/confdata.c \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl2.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/expr.c \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/symbol.c \
+  scripts/kconfig/expr.c \
+  scripts/kconfig/symbol.c \
   /usr/include/regex.h \
   /usr/include/x86_64-linux-gnu/sys/utsname.h \
   /usr/include/x86_64-linux-gnu/bits/utsname.h \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/menu.c \
-  /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/linux-rpi-4.19.y/scripts/kconfig/preprocess.c \
+  scripts/kconfig/menu.c \
+  scripts/kconfig/preprocess.c \
 
 scripts/kconfig/zconf.tab.o: $(deps_scripts/kconfig/zconf.tab.o)
 
