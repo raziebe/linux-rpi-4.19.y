@@ -145,6 +145,7 @@ struct LimePageContext{
 	long* hyp_vaddr; 		// Memory content of the page
 	unsigned long phy_addr; // Original physical address of this page
 	char state;				// States if this struct's memory space is occupied or not TODO atomic...
+	hyp_spinlock_t lock;
 };
 
 struct IomemAddressRange{

@@ -211,6 +211,8 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	
 	lp  = (struct LimePagePool *) KERN_TO_HYP(vm->limePool);
 	
+
+	// TODO: uncomment this, put _hyp_text in phys_addr_to_bitfield_index and compile ; not needed though - just an optimization
 	// If page already sent then no need to copy it TODO lock this? or move it after before code that locks (remember to unlock)
 	//if(IS_PAGE_SENT(lp->page_processed, phy_addr_to_bitfield_page_index(phy_addr)))
 	//	return 0;
@@ -219,24 +221,62 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 	// copy page content into pool
 	if (!is_black_listed(pfn)){
 		int index = 0;
-		struct LimePageContext* slot;
+		struct LimePageContext* slot, *some_pool;
+		hyp_spinlock_t* lock = &(lp->lock);
 		unsigned char *p = (unsigned char *)phy_addr;
-
+		int should_unlock = 0;
 		vm->cur_phy_addr = phy_addr;
-
-		/* spin locking the page pool */
-		//hyp_spin_lock(&lp->lock);
-
-// bug below this
 
 		/* find empty slot in one of the pools pool */
 		for (i = 0; i < NUM_POOLS; i++)
 		{
 			/* calculate index of */
 			for (index = 0; index < POOL_SIZE; index++)
-				if( ( (struct LimePageContext*) KERN_TO_HYP( lp->pools[i] ) )[index].state == LiME_POOL_PAGE_FREE)
-					break;
-			
+			{
+				some_pool = (struct LimePageContext*) KERN_TO_HYP( lp->pools[i] );
+				if(some_pool[index].state == LiME_POOL_PAGE_FREE)
+				{
+					// synchronization
+					/*
+						hyp_spin_lock(pools[i][index]);
+						if slot is still free:
+							break;
+						// else continue looking
+						hyp_spin_unlock(pools[i][index]);
+					*/
+
+					// lock = (hyp_spinlock_t* )KERN_TO_HYP(&( some_pool[index].lock )); // dont work!
+					
+					// lock = &( some_pool[index].lock ); // dont work
+					// vm->cur_phy_addr = (unsigned long) lock->lock;
+					// hyp_spin_lock(lock); 	// dont work
+					// hyp_spin_unlock(lock);	// dont work
+
+					// lock = &(lp->lock); // work
+
+					// lock the slot and double check					
+					hyp_spin_lock( lock );
+					if(some_pool[index].state == LiME_POOL_PAGE_FREE)
+					{
+						should_unlock = 1;
+						break;
+					}
+					/* free the lock */
+					hyp_spin_unlock( lock );					
+					// break;
+			/* 
+					// lock the slot and double check
+					hyp_spin_lock( &(lp->pools[i][index].lock) );
+					if( ( (struct LimePageContext*) KERN_TO_HYP( lp->pools[i] ) )[index].state == LiME_POOL_PAGE_FREE)
+					{
+						should_unlock = 1;
+						break;
+					}
+					// continue searching for a free slot
+					hyp_spin_unlock( &(lp->pools[i][index].lock) );
+			*/
+				}
+			}
 			/* we found an empty slot in the i'th pool in the index's slot - pools[i][index]*/
 			if(index < POOL_SIZE)
 				break;
@@ -255,12 +295,12 @@ unsigned long __hyp_text hyplet_handle_abrt(struct hyplet_vm *vm,
 
 		slot->phy_addr = phy_addr;		
 		slot->state = LiME_POOL_PAGE_OCCUPIED;
-
-		//return 0; // TODO MOVE DOWN		
+	
 		hyp_memcpy((char *)KERN_TO_HYP(slot->hyp_vaddr), p, PAGE_SIZE);
 
-		/* unlocking the lime pool */
-		//hyp_spin_unlock(&lp->lock);
+		if(should_unlock)
+			hyp_spin_unlock( lock );
+		//	hyp_spin_unlock( &(lp->pools[i][index].lock) );
 	}
 
 	return 0;
@@ -310,6 +350,9 @@ int setup_lime_pool(void)
 			return -1;
 		}
 		memset(limepool->pools[i], 0x00, sizeof(struct LimePageContext) * POOL_SIZE);
+
+		for(j = 0; j < POOL_SIZE; ++j)
+			hyp_spin_lock_init( &(limepool->pools[i][j].lock) );
 	}
 
 	/* allocate pool->iomem structure */
@@ -475,14 +518,13 @@ static ssize_t proc_read(struct file *filp, char __user * page,
 						phy_addr,
 						pool_min->state);
 			}
+		}
 
-			for( j = 0; j < lp->iomem_ranges_size; j++ )
+		for( j = 0; j < lp->iomem_ranges_size; j++ )
 				len += sprintf(page + len,
 						"iomem address start = %lx end = %lx\n", 
-						lp->iomem_address_ranges[i].start_phys_addr,
-						lp->iomem_address_ranges[i].end_phys_addr);
-
-		}		 
+						lp->iomem_address_ranges[j].start_phys_addr,
+						lp->iomem_address_ranges[j].end_phys_addr);		 
 	}
 	filp->private_data = 0x00;
 	return len;
