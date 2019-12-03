@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/LimeHeader.h
+
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/constants.h
+
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/dump.h
+page.h
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/page.h
+LimeHeader.h
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/LimeHeader.h
+vector
+-
+string
+-
+iostream
+-
+fstream
+-
+iterator
+-
+
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/main.cpp
+iostream
+-
+dump.h
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/dump.h
+
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/page.h
+constants.h
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/constants.h
+

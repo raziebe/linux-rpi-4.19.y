@@ -1,0 +1,4 @@
+/media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/clion-2019.2.4/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /media/erez/d8937e14-2c1b-45c0-b5d2-bdd2043f09a2/microLime/microLime/cmake-build-debug

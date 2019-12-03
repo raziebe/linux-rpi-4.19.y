@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="microLime" targetName="microLime" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1421335d-af4c-4f1f-b48f-93729fd4d2d1" name="Default Changelist" comment="Bug fixes.&#10;dumpOut uses iterators correctly.&#10;ifstream is used correctly (error checking).&#10;getNumberPages is now correct (I checked in the raspberry pi /proc/iomem to see if number is calculated correctly)&#10;&#10;&#10;Added constructor for class dump, to reserve 242688 pages in the vector to avoid many needless reallocation.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/microLime.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/microLime.dir/CXX.includecache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/microLime.dir/main.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/microLime.dir/main.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/microLime" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/microLime" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="3a19be2dc11c3523ebfe38948021f0ea461d86f8" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectId" id="1TWc6peOeCtLWCXvvqkWtAireCF" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="preferences.general" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="microLime" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="microLime" TARGET_NAME="microLime" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="microLime" RUN_TARGET_NAME="microLime">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1421335d-af4c-4f1f-b48f-93729fd4d2d1" name="Default Changelist" comment="" />
+      <created>1573579119663</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1573579119663</updated>
+      <workItem from="1573579121185" duration="7715000" />
+      <workItem from="1574097730716" duration="4868000" />
+      <workItem from="1574102758308" duration="2343000" />
+      <workItem from="1574324315188" duration="4742000" />
+      <workItem from="1574412101168" duration="4169000" />
+      <workItem from="1574430365616" duration="1899000" />
+      <workItem from="1574942717955" duration="3236000" />
+      <workItem from="1575296230772" duration="624000" />
+    </task>
+    <task id="LOCAL-00001" summary="Fixed bugs and did some optimizations with memcpy.">
+      <created>1574101944997</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1574101944997</updated>
+    </task>
+    <task id="LOCAL-00002" summary="code seems to work.&#10;TODO fix bug where parser dont go over every pages in input file (maybee getPageCount() is not computed correctly?)&#10;file.eof() should be the reason the loop exits, not because of a break; like now&#10;TODO make sure variable sizes are like the one on the raspberry pi.. sizeof(long) in lime == sizeof(long) here for example...&#10;and more stuff i forgot actually">
+      <created>1574104791483</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1574104791483</updated>
+    </task>
+    <task id="LOCAL-00003" summary="add flush and close in dumpOut">
+      <created>1574943529169</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1574943529170</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Tidy up the code">
+      <created>1574943988830</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1574943988830</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="Fixed bugs and did some optimizations with memcpy." />
+    <MESSAGE value="code seems to work.&#10;TODO fix bug where parser dont go over every pages in input file (maybee getPageCount() is not computed correctly?)&#10;file.eof() should be the reason the loop exits, not because of a break; like now&#10;TODO make sure variable sizes are like the one on the raspberry pi.. sizeof(long) in lime == sizeof(long) here for example...&#10;and more stuff i forgot actually" />
+    <MESSAGE value="Bug fixes.&#10;dumpOut uses iterators correctly.&#10;ifstream is used correctly (error checking).&#10;getNumberPages is now correct (I checked in the raspberry pi /proc/iomem to see if number is calculated correctly)&#10;&#10;&#10;Added constructor for class dump, to reserve 242688 pages in the vector to avoid many needless reallocation." />
+    <MESSAGE value="add flush and close in dumpOut" />
+    <MESSAGE value="Tidy up the code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Tidy up the code" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+</project>

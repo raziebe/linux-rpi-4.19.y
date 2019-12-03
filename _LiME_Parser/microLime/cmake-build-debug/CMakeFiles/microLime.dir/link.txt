@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/microLime.dir/main.cpp.o CMakeFiles/microLime.dir/dump.cpp.o CMakeFiles/microLime.dir/page.cpp.o  -o microLime 
